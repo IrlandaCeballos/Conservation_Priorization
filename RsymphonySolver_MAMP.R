@@ -5,24 +5,24 @@ setwd("C:/Users/Irlanda Ceballos/Documents/GitHub/Conservation_Priorization")
 sourceCpp(file = "src/RcppClass_MAMPData.cpp")
 sourceCpp(file = "src/RcppFunction_GlobalFunctions.cpp")
 
+# # Lectura de datos (inputs) de MARXAN/MAMP (inputs: 10 units/ 5 species/ 3 threats)
+# #------------------------------------------------------------------------------------------
+# target_Data       <- as.data.frame(read_delim("data/data_ExtremelySmall/spec_ExtremelySmall.csv", ";", trim_ws = TRUE)%>%select(1:5))
+# unitCost_Data     <- as.data.frame(read_delim("data/data_ExtremelySmall/PU_ExtremelySmall.csv", ";", trim_ws = TRUE))
+# boundary_Data     <- as.data.frame(read_delim("data/data_ExtremelySmall/bound_ExtremelySmall.csv", ";",
+#                                               trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
+# speciesDistribution_Data <- as.data.frame(read_delim("data/data_ExtremelySmall/puvspr2_ExtremelySmall.csv", ";", trim_ws = TRUE))
+# speciesDistribution_Data <- cbind.data.frame(speciesDistribution_Data$pu, speciesDistribution_Data$species, speciesDistribution_Data$amount);
+# colnames(speciesDistribution_Data) <- c("pu","species","amount")
+# 
+# #New data required by the MAMP problem (Threats distribution, species-threats sensibility and action cost)
+# threatsDistribution_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/threatsDistribution_ExtremelySmall.csv",
+#                                                       ";", trim_ws = TRUE, col_types = cols(pu = col_integer(), threats = col_integer(), amount = col_integer() )) )
+# sensibility_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/speciesThreatsSensibility_ExtremelySmall.csv",
+#                                               ";", trim_ws = TRUE, col_types = cols(species = col_integer(), threats = col_integer(), sensibility = col_integer() )) )
+# actionCost_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/actionCost_ExtremelySmall.csv",
+#                                              ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
 
-# Lectura de datos (inputs) de MARXAN/MAMP (inputs: 10 units/ 5 species/ 3 threats)
-#------------------------------------------------------------------------------------------
-target_Data       <- as.data.frame(read_delim("data/data_ExtremelySmall/spec_ExtremelySmall.csv", ";", trim_ws = TRUE)%>%select(1:5))
-unitCost_Data     <- as.data.frame(read_delim("data/data_ExtremelySmall/PU_ExtremelySmall.csv", ";", trim_ws = TRUE))
-boundary_Data     <- as.data.frame(read_delim("data/data_ExtremelySmall/bound_ExtremelySmall.csv", ";",
-                                              trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
-speciesDistribution_Data <- as.data.frame(read_delim("data/data_ExtremelySmall/puvspr2_ExtremelySmall.csv", ";", trim_ws = TRUE))
-speciesDistribution_Data <- cbind.data.frame(speciesDistribution_Data$pu, speciesDistribution_Data$species, speciesDistribution_Data$amount);
-colnames(speciesDistribution_Data) <- c("pu","species","amount")
-
-#New data required by the MAMP problem (Threats distribution, species-threats sensibility and action cost)
-threatsDistribution_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/threatsDistribution_ExtremelySmall.csv",
-                                                      ";", trim_ws = TRUE, col_types = cols(pu = col_integer(), threats = col_integer(), amount = col_integer() )) )
-sensibility_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/speciesThreatsSensibility_ExtremelySmall.csv",
-                                              ";", trim_ws = TRUE, col_types = cols(species = col_integer(), threats = col_integer(), sensibility = col_integer() )) )
-actionCost_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/actionCost_ExtremelySmall.csv",
-                                             ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
 
 # # Lectura de datos (inputs) de MARXAN/MAMP (inputs: 2316 units/ 45 species/ 4 threats)
 # #------------------------------------------------------------------------------------------
@@ -42,6 +42,24 @@ actionCost_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/actionCos
 # actionCost_Data <- as.data.frame( read_delim("data/data_Big/actionCost_Big.csv", 
 #                                              ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
 
+
+# Lectura de datos (inputs) de MARXAN/MAMP (inputs: 240 units/ 10 species/ 4 threats)
+#------------------------------------------------------------------------------------------
+target_Data       <- as.data.frame(read_delim("data/data_Small/spec_Small.csv", ";", trim_ws = TRUE)%>%select(1:5))
+unitCost_Data     <- as.data.frame(read_delim("data/data_Small/PU_Small.csv", ";", trim_ws = TRUE))
+boundary_Data     <- as.data.frame(read_delim("data/data_Small/bound_Small.csv", ";",
+                                             trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
+speciesDistribution_Data <- as.data.frame(read_delim("data/data_Small/puvspr2_Small.csv", ";", trim_ws = TRUE))
+speciesDistribution_Data <- cbind.data.frame(speciesDistribution_Data$pu, speciesDistribution_Data$species, speciesDistribution_Data$amount);
+colnames(speciesDistribution_Data) <- c("pu","species","amount")
+
+#New data required by the MAMP problem (Threats distribution, species-threats sensibility and action cost)
+threatsDistribution_Data <- as.data.frame( read_delim("data/data_Small/threatsDistribution_Small.csv",
+                                                      ";", trim_ws = TRUE, col_types = cols(pu = col_integer(), threats = col_integer(), amount = col_integer() )) )
+sensibility_Data <- as.data.frame( read_delim("data/data_Small/speciesThreatsSensibility_Small.csv",
+                                              ";", trim_ws = TRUE, col_types = cols(species = col_integer(), threats = col_integer(), sensibility = col_integer() )) )
+actionCost_Data <- as.data.frame( read_delim("data/data_Small/actionCost_Small.csv",
+                                             ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
 
 #------------------------------------------------------------------------------------------
 #------------- # MAMP (with gamma = 1), con Rsymphony Solver (de la API de R) -------------
@@ -65,8 +83,10 @@ matrix_speciesDistribution <- originalMatrix_Distribution(data= speciesDistribut
 matrix_threatsDistribution <- originalMatrix_Distribution(data= threatsDistribution_Data, units= numberUnits, species= numberThreats)
 matrix_c <- createMatrix_c(dataDistribution = matrix_threatsDistribution, dataCost = as.vector(x = unitCost_Data[,2] , mode = "numeric"))
 
-# write.csv(matrix_cv, file="cv_Matrix.csv", row.names = F)
-# write.csv(matrix_speciesDistribution, file="speciesDistribution_Matrix.csv", row.names = F)
+write.csv(matrix_cv, file="NEW_cv_Matrix.csv", row.names = F)
+write.csv(matrix_speciesDistribution, file="NEW_speciesDistribution_Matrix.csv", row.names = F)
+write.csv(matrix_threatsDistribution, file="NEW_threatsDistribution_Matrix.csv", row.names = F)
+write.csv(matrix_c, file="NEW_actionCost_Matrix.csv", row.names = F)
 
 #------------------------------------------------------------------------------------------
 #---------------- Vector C - Coefficients associated with the planning cost ---------------
@@ -206,6 +226,14 @@ numberVariables  = numberVariablesW + numberVariablesY + numberVariablesX + numb
 
 vectorVariables = c(vectorVariablesW, vectorVariablesY, vectorVariablesX, vectorVariablesZ)
 vectorC_Final   = as.vector(x= c(vectorC_PlanningCost, vectorC_ConnectivityCost, vectorC_ActionCost, vectorC_auxVarZ), mode = "numeric")	
+
+#vectorC_Final_Sparse = Matrix(data = vectorC_Final, nrow=1, sparse = TRUE)
+vectorC_Final_Sparse = as(vectorC_Final, "sparseVector")
+
+object.size(vectorC_Final)
+object.size(vectorC_Final_Sparse)
+
+View(vectorC_Final)  
 
 #------------------------------------------------------------------------------------------
 #----- Matrix A - Coefficients associated with the variables of the first restriction -----
@@ -369,6 +397,12 @@ for(l in 1:numberVariablesY){
 matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP6)
 #View(matrixA_Final)
 
+
+matrixA_Final_Sparse = Matrix(data = matrixA_Final, sparse = TRUE)
+
+object.size(matrixA_Final)/(1024*1024)
+object.size(matrixA_Final_Sparse)/(1024*1024)
+
 #------------------------------------------------------------------------------------------
 #----------------- Vector b - Parameters associated with all restrictions -----------------
 #-------------------------------- (RHS, right-hand side) ----------------------------------
@@ -403,8 +437,10 @@ vectorVariablestype = rep("B", numberVariables)
 
 
 #Inputs parameters for Rsymphony's solver
-obj      <- vectorC_Final
-mat      <- matrixA_Final
+#obj      <- vectorC_Final
+#mat      <- matrixA_Final
+obj      <- vectorC_Final_Sparse
+mat      <- matrixA_Final_Sparse
 dir      <- vectorSense_Final
 rhs      <- vectorb_Final
 bounds   <- vectorBounds
@@ -427,7 +463,7 @@ modelSolver_Rsymphony <- Rsymphony::Rsymphony_solve_LP(obj, mat, dir, rhs, bound
 print(modelSolver_Rsymphony)
 
 #################################################################
-install.packages("Rglpk")
+#install.packages("Rglpk")
 library("Rglpk")
 
 modelSolver_GLPK <- Rglpk::Rglpk_solve_LP(obj, mat, dir, rhs, bounds = bounds, 
