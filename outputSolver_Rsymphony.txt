@@ -1,0 +1,1 @@
+Output Solver RsymphonynOutput Solver RsymphonynOutput Solver Rsymphonyn$solutionn [1] 0 1 1 0 1 1 1 1 0 0 0 0 0 0 0 1 1 1 0 1 1 1 0 0 0 1 1 0 1 0 1 0 1 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 1 0n[55] 0 0 1 1 1 1 1 1 1 1 1nn$objvaln[1] 33.86181nn$statusnTM_OPTIMAL_SOLUTION_FOUND n                        0 n

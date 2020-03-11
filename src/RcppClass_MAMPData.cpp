@@ -218,6 +218,54 @@ std::map<int,std::map<int,double>> MAMPData::getBoundary(){
   return boundaryData;
 }
 
+//METHOD
+List MAMPData::getSet(String setName){
+  std::map<int,std::map<int,bool>> setData;
+  int setCardinality;
+  int subsetCardinality;
+  List setRequired;
+  StringVector namesList;
+  bool filterCondition;
+  
+  if(setName == "Si"){
+    setData = getSpeciesDistribution();
+    setCardinality = units;
+    subsetCardinality = species;
+  }
+  if(setName == "Is"){
+    setData = getSpeciesDistribution_t();
+    setCardinality = species;
+    subsetCardinality = units;
+  }
+  if(setName == "Ki"){
+    setData = getThreatsDistribution();
+    setCardinality = units;
+    subsetCardinality = threats; 
+  }
+  if(setName == "Ks"){
+    setData = getSensibility();   
+    setCardinality = species;
+    subsetCardinality = threats;
+  }
+  
+  for(int i = 1; i <= setCardinality; i++){
+    namesList.push_back(std::to_string(i));
+    IntegerVector listValues;
+    for(int j = 1; j<= subsetCardinality; j++){
+      filterCondition = setData[i][j];
+      if(filterCondition == true){
+        listValues.push_back(j);
+      }
+    }
+    setRequired.push_back(listValues);
+  }//END external for! 
+  
+  setRequired.names() = namesList;
+    
+  return setRequired;
+}
+
+
 
 //RCPP 'EXPOSURE BLOCK'.
 RCPP_MODULE(MAMPDatamodule){
@@ -244,6 +292,7 @@ RCPP_MODULE(MAMPDatamodule){
   .method( "getSpeciesDistribution_t", &MAMPData::getSpeciesDistribution_t, "documentation for getSpeciesDistribution_t")
   .method( "getThreatsDistribution", &MAMPData::getThreatsDistribution, "documentation for getThreatsDistribution")
   .method( "getSensibility", &MAMPData::getSensibility, "documentation for getSensibility")
-  .method( "getBoundary",    &MAMPData::getBoundary,    "documentation for getBoundary");
+  .method( "getBoundary",    &MAMPData::getBoundary,    "documentation for getBoundary")
+  .method( "getSet",         &MAMPData::getSet,         "documentation for getSet");
 }
 

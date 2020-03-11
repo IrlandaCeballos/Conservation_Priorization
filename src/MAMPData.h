@@ -35,6 +35,7 @@ public:
   std::map<int,std::map<int,bool>> getThreatsDistribution();
   std::map<int,std::map<int,bool>> getSensibility();
   std::map<int,std::map<int,double>> getBoundary();
+  List getSet(String setName);
   
 private:
   int units   = getUnits();

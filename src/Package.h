@@ -26,6 +26,7 @@ using namespace Rcpp;
 #include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/lexical_cast.hpp>
 
 
 #endif

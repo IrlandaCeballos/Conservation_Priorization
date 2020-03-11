@@ -218,6 +218,20 @@ NumericMatrix createMatrix_c(IntegerMatrix dataDistribution, NumericVector dataC
   return matrix_c;
 }
 
+// // [[Rcpp::export(name = "create_Set")]]
+// List create_Set(List setData, int setCardinality){
+//   IntegerVector vectorAux01 = boost::lexical_cast<int>(setData[0]); 
+//   IntegerVector vectorAux02 = boost::lexical_cast<int>(setData[1]); 
+//   
+//   //IntegerVector vectorAux02 = std::stoi(setData[1]) ;
+//   List setRequired = List::create(
+//     _["Labels"]   = vectorAux01,
+//     _["Elements"] = vectorAux02
+//   );
+//   
+//   return setRequired;
+// }
+
 /*** R
 #Write code in R language.
 ***/
