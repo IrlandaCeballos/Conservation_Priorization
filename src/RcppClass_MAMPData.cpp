@@ -102,7 +102,7 @@ std::map<int,std::map<int,int>> MAMPData::getActionCost(){
 }
 
 //METHOD: It gets you a 'MAP<int,std::map<int,bool>>' from: Planning Units|Species|Amount.
-//Corresponds to the subset S[i].
+//Corresponds to the set S[i] (only create S[i] subsets that are NOT empty!).
 std::map<int,std::map<int,bool>> MAMPData::getSpeciesDistribution(){
   std::map<int,std::map<int,bool>> speciesDistributionData; //It stores the value of species and their quantity in the respective planning unit.
   
@@ -124,10 +124,9 @@ std::map<int,std::map<int,bool>> MAMPData::getSpeciesDistribution(){
   return speciesDistributionData;
 }
 
-
-
 //METHOD: It gets you a 'MAP<int,std::map<int,bool>>' from: Species|Planning Units|Amount.
-//Corresponds to the "transpose" of the species distribution data (i.e. subset I[s]).
+//Corresponds to the "transpose" of the species distribution data (i.e. set I[s]), 
+//but only create I[s] subsets that are NOT empty!
 std::map<int,std::map<int,bool>> MAMPData::getSpeciesDistribution_t(){
   std::map<int,std::map<int,bool>> speciesDistributionData_t; //It stores the value of species and their quantity in the respective planning unit.
   
@@ -148,11 +147,8 @@ std::map<int,std::map<int,bool>> MAMPData::getSpeciesDistribution_t(){
   return speciesDistributionData_t;
 }
 
-
-
-
 //METHOD: It gets you a 'MAP<int,std::map<int,bool>>' from: Planning Units|Threats|Amount.
-//Corresponds to the subset K[i].
+//Corresponds to the set K[i] (only create K[i] subsets that are NOT empty!).
 std::map<int,std::map<int,bool>> MAMPData::getThreatsDistribution(){
   std::map<int,std::map<int,bool>> threatsDistributionData; //It stores the value of threats and their quantity in the respective planning unit.
   
@@ -175,7 +171,7 @@ std::map<int,std::map<int,bool>> MAMPData::getThreatsDistribution(){
 }
 
 //METHOD: It gets you a 'MAP<int,std::map<int,bool>>' from: Species|Threats|Sensibility.
-//Corresponds to the subset K[s].
+//Corresponds to the set K[s] (only create K[s] subsets that are NOT empty!).
 std::map<int,std::map<int,bool>> MAMPData::getSensibility(){
   std::map<int,std::map<int,bool>> sensibilityData; //It stores the sensibility of species to threats.
   
@@ -218,11 +214,13 @@ std::map<int,std::map<int,double>> MAMPData::getBoundary(){
   return boundaryData;
 }
 
-//METHOD
+//METHOD: It gets you a LIST with the set that you required, for example, 
+//"Ki" gives you the set K[i] (the options are: "Si", "Is", "Ki", "Ks"). 
+//The method only needs the name of the set (Rcpp::String).
 List MAMPData::getSet(String setName){
-  std::map<int,std::map<int,bool>> setData;
-  int setCardinality;
-  int subsetCardinality;
+  std::map<int,std::map<int,bool>> setData; //To identify the data input that is needed.
+  int setCardinality = 0;    //To identify the expected cardinality of the set.
+  int subsetCardinality = 0; //To identify the expected cardinality of the subsets.
   List setRequired;
   StringVector namesList;
   bool filterCondition;
@@ -234,7 +232,7 @@ List MAMPData::getSet(String setName){
   }
   if(setName == "Is"){
     setData = getSpeciesDistribution_t();
-    setCardinality = species;
+    setCardinality = species; 
     subsetCardinality = units;
   }
   if(setName == "Ki"){

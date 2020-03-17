@@ -1,6 +1,8 @@
 #include "Package.h"
 /* 
- * <<Function that not belong to the Class "DataInstance">>
+ * Function that converts any vector of binary integers (only 1 and 0) into 
+ * a logical vector (only true and false).
+ * Function only needs the vector you want to transform.
  */
 // [[Rcpp::export(name = "convertToBoolean")]]
 LogicalVector convertToBoolean(IntegerVector x){
@@ -27,7 +29,7 @@ bool getValueTuple(int indexI, int indexJ, DataFrame arrayData){
   int dataSize = arrayData.nrows();
   IntegerVector vectorAux08 = arrayData[0];
   IntegerVector vectorAux09 = arrayData[1];
-  LogicalVector vectorAux10 = arrayData[2];
+  LogicalVector vectorAux10 = arrayData[2]; 
   
   for(int i = 0; i < dataSize; i++){
     if( vectorAux08[i] == indexI  && vectorAux09[i] == indexJ  ){
@@ -122,6 +124,9 @@ String variableX(int indexI, int indexK){
   return varX;
 }
 
+/* 
+ * Function sets the name of a variable "Z" with is respective index "i" and "s" (i.e, "Z[i,s]").
+ */
 // [[Rcpp::export(name = "variableZ")]]
 String variableZ(int indexI, int indexS){
   std::string index_I       = std::to_string(indexI);
@@ -133,11 +138,9 @@ String variableZ(int indexI, int indexS){
   return varZ;
 }
 
-
-
 /*
  * Function that creates the original matrix "cv[i1, i2]" from the information of the 
- * dataframe "dataBoundary" (dense matrix with tuple data). 
+ * dataframe "boundary_Data" (dense matrix with tuple data). 
  * Function only needs the number of planning units, the type the data distribution 
  * that you want (symmetric or asymmetric), and the data (tuple data), obviously.
  */
@@ -174,7 +177,11 @@ NumericMatrix originalMatrix_cv(String type, DataFrame data, int units){
 }
 
 /*
- * 
+ * Function that creates the original matrix (sparse matrix) from the information of the data frames: 
+ * "speciesDistribution_Data" or "threatsDistribution_Data" (dense matrices with tuple data),
+ * depending on what the user wants.
+ * Function only needs the number of planning units, the number of species (or threats) 
+ * and the data (tuple data), obviously. 
  */
 // [[Rcpp::export(name = "originalMatrix_Distribution")]]
 IntegerMatrix originalMatrix_Distribution(DataFrame data, int units, int species){
@@ -198,7 +205,7 @@ return matrix_Distribution;
 }
 
 /*
- * The function creates matrix c from vector cm, assuming that the cost of applying an action to eliminate 
+ * Function that creates matrix "c[i,k]" from vector "cm[i]", assuming that the cost of applying an action to eliminate 
  * threat k in K from unit i in I is the same for all threats that are in i (set Ki).
  * Function only needs the original matrix of threats distribution and the vector of planning unit cost.
  */
@@ -218,19 +225,6 @@ NumericMatrix createMatrix_c(IntegerMatrix dataDistribution, NumericVector dataC
   return matrix_c;
 }
 
-// // [[Rcpp::export(name = "create_Set")]]
-// List create_Set(List setData, int setCardinality){
-//   IntegerVector vectorAux01 = boost::lexical_cast<int>(setData[0]); 
-//   IntegerVector vectorAux02 = boost::lexical_cast<int>(setData[1]); 
-//   
-//   //IntegerVector vectorAux02 = std::stoi(setData[1]) ;
-//   List setRequired = List::create(
-//     _["Labels"]   = vectorAux01,
-//     _["Elements"] = vectorAux02
-//   );
-//   
-//   return setRequired;
-// }
 
 /*** R
 #Write code in R language.

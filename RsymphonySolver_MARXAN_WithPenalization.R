@@ -9,23 +9,34 @@ setwd("C:/Users/Irlanda Ceballos/Documents/GitHub/Conservation_Priorization")
 sourceCpp(file = "src/RcppClass_MARXANData.cpp")
 sourceCpp(file = "src/RcppFunction_GlobalFunctions.cpp")
 
-dataTarget       <- as.data.frame(read_delim("data/data_ExtremelySmall/spec_ExtremelySmall.csv", ";", trim_ws = TRUE)%>%select(1:5))
-dataCost         <- as.data.frame(read_delim("data/data_ExtremelySmall/PU_ExtremelySmall.csv", ";", trim_ws = TRUE))
-dataBoundary     <- as.data.frame(read_delim("data/data_ExtremelySmall/bound_ExtremelySmall.csv", ";",
+#Lectura de datos (inputs) de MARXAN (inputs: 10 units/ 5 species/ 3 threats)
+dataTarget       <- as.data.frame(read_delim("data/data_ExtremelySmall/target_ExtremelySmall.csv", ";", trim_ws = TRUE)%>%select(1:5))
+dataCost         <- as.data.frame(read_delim("data/data_ExtremelySmall/unitCost_ExtremelySmall.csv", ";", trim_ws = TRUE))
+dataBoundary     <- as.data.frame(read_delim("data/data_ExtremelySmall/boundary_ExtremelySmall.csv", ";",
                                              trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
-dataDistribution <- as.data.frame(read_delim("data/data_ExtremelySmall/puvspr2_ExtremelySmall.csv", ";", trim_ws = TRUE))
+dataDistribution <- as.data.frame(read_delim("data/data_ExtremelySmall/speciesDistribution_ExtremelySmall.csv", ";", trim_ws = TRUE))
 dataDistribution <- cbind.data.frame(dataDistribution$pu, dataDistribution$species, dataDistribution$amount);
 colnames(dataDistribution) <- c("pu","species","amount")
 
 
-# dataTarget       <- as.data.frame(read_delim("data/data_Small/spec_Small.csv", ";", trim_ws = TRUE)%>%select(1:5))
-# dataCost         <- as.data.frame(read_delim("data/data_Small/PU_Small.csv", ";", trim_ws = TRUE))
-# dataBoundary     <- as.data.frame(read_delim("data/data_Small/bound_Small.csv", ";",
+# # Lectura de datos (inputs) de MARXAN (inputs: 240 units/ 10 species/ 4 threats)
+# dataTarget       <- as.data.frame(read_delim("data/data_Small/target_Small.csv", ";", trim_ws = TRUE)%>%select(1:5))
+# dataCost         <- as.data.frame(read_delim("data/data_Small/unitCost_Small.csv", ";", trim_ws = TRUE))
+# dataBoundary     <- as.data.frame(read_delim("data/data_Small/boundary_Small.csv", ";",
 #                                              trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
-# dataDistribution <- as.data.frame(read_delim("data/data_Small/puvspr2_Small.csv", ";", trim_ws = TRUE))
+# dataDistribution <- as.data.frame(read_delim("data/data_Small/speciesDistribution_Small.csv", ";", trim_ws = TRUE))
 # dataDistribution <- cbind.data.frame(dataDistribution$pu, dataDistribution$species, dataDistribution$amount);
 # colnames(dataDistribution) <- c("pu","species","amount")
-
+# 
+# 
+# #Lectura de datos (inputs) de MARXAN (inputs: 2316 units/ 45 species/ 4 threats)
+# dataTarget       <- as.data.frame(read_delim("data/data_Big/target_Big.csv", ";", trim_ws = TRUE)%>%select(1:5))
+# dataCost         <- as.data.frame(read_delim("data/data_Big/unitCost_Big.csv", ";", trim_ws = TRUE))
+# dataBoundary     <- as.data.frame(read_delim("data/data_Big/boundary_Big.csv", ";",
+#                                              trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
+# dataDistribution <- as.data.frame(read_delim("data/data_Big/speciesDistribution_Big.csv", ";", trim_ws = TRUE))
+# dataDistribution <- cbind.data.frame(dataDistribution$pu, dataDistribution$species, dataDistribution$amount);
+# colnames(dataDistribution) <- c("pu","species","amount")
 
 
 # MARXAN con Penalización, con Rsymphony Solver (de la API de R)
