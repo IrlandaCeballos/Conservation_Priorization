@@ -67,8 +67,6 @@ actionCost_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/actionCos
 #------------- # MAMP (with gamma = 1), con Rsymphony Solver (de la API de R) -------------
 #------------------------------------------------------------------------------------------
 #Observation: "MAMPData" Class was writen in the C++ language.
-
-sourceCpp(file = "src/RcppClass_MAMPData.cpp")
 problemData = new(MAMPData, target_Data, unitCost_Data, boundary_Data, speciesDistribution_Data, threatsDistribution_Data, sensibility_Data, actionCost_Data)
 
 beta1             = problemData$getBeta1()       #beta1 set in 1 for default!
@@ -203,14 +201,11 @@ for(i in 1:numberUnits){
   }
 }
 
+
 #------------------------------------------------------------------------------------------
 #------------ Vector C - Coefficients associated with the auxiliary variable Z ------------
 #--------------------- (coefficients associated with Z[i,s] variables) --------------------
 #------------------------------------------------------------------------------------------
-#Si <- problemData$getSpeciesDistribution() #It corresponds to the set Si (Si belong to set S).
-#Ki <- problemData$getThreatsDistribution() #It corresponds to the set Ki (Ki belong to set K).
-#Ks <- problemData$getSensibility()         #It corresponds to the set Ks (Ks belong to set K).
-
 vectorVariablesZ  = c()
 vectorIndex_i_Zis = c()
 vectorIndex_s_Zis = c()
@@ -231,10 +226,73 @@ for(i in 1:numberUnits){
   }
 }
 
-
 numberVariablesZ = length(vectorVariablesZ)
 vectorC_auxVarZ  = vector(mode = "numeric", length = numberVariablesZ)
 
+#------------------------------------------------------------------------------------------
+#----------- Vector C - Coefficients associated with the the auxiliary variable B ---------
+#-------------------- (coefficients associated with B[i,s] variables) ---------------------
+#------------------------------------------------------------------------------------------
+vectorIndex_i_Bis = c()
+vectorIndex_s_Bis = c()
+
+for(s in 1:numberSpecies){
+  subset_Is <- Is[[s]] #The subset is a vector of integers following its definition in C ++.
+  subset_Ks <- Ks[[s]]
+  for(i in subset_Is){
+    subset_Ki        <- Ki[[i]]
+    subset_Ki_Ks     <- intersect(subset_Ki,subset_Ks)
+    intersectionSize <- length(subset_Ki_Ks)
+    
+    if(intersectionSize != 0){
+      #print(paste("i = ", i," s = ",s," intersection = ", subset_Ki_Ks) ) ;
+      vectorIndex_i_Bis = c(vectorIndex_i_Bis, i)
+      vectorIndex_s_Bis = c(vectorIndex_s_Bis, s)
+    }#END internal if
+  }#END external_1 for (about Planning Units!)
+}#END external_2 for (about Species!)
+
+matrixIndex_Bis  = cbind(vectorIndex_i_Bis, vectorIndex_s_Bis)
+matrixIndex_Bis  = matrixIndex_Bis[order(matrixIndex_Bis[,1], matrixIndex_Bis[,2]), ] #The last comma "," is necessary!
+vectorVariablesB = apply(X = matrixIndex_Bis, MARGIN = 1, FUN = function(x) variableB(x[1], x[2])) 
+#Observation: "variableB()" Function was written in C++ language.
+
+numberVariablesB = length(vectorVariablesB)
+vectorC_auxVarB  = vector(mode = "numeric", length = numberVariablesB)
+
+#------------------------------------------------------------------------------------------
+#-------- Vector C - Coefficients associated with the the auxiliary variable Lambda -------
+#---------------- (coefficients associated with Lambda[i,s,m] variables) ------------------
+#------------------------------------------------------------------------------------------
+vectorVariablesLambda     = c()
+vectorVariablesLambda_Seg = vector(mode = "numeric", length = numberVariablesB)
+
+for(m in 1:numberSegments){
+  vectorVariablesLambda_Seg = apply(X = matrixIndex_Bis, MARGIN = 1, FUN = function(x) variableLambda(x[1], x[2], m)) 
+  vectorVariablesLambda = c(vectorVariablesLambda, vectorVariablesLambda_Seg)
+}
+
+numberVariablesLambda = numberVariablesB*numberSegments
+vectorC_auxVarLambda  = vector(mode = "numeric", length = numberVariablesLambda)  
+
+#------------------------------------------------------------------------------------------
+#----------- Vector C - Coefficients associated with the the auxiliary variable V ---------
+#------------------- (coefficients associated with V[i,s,m] variables) --------------------
+#------------------------------------------------------------------------------------------
+vectorVariablesV     = c()
+vectorVariablesV_Seg = vector(mode = "numeric", length = numberVariablesB)
+
+for(m in 1:numberSegments){
+  vectorVariablesV_Seg = apply(X = matrixIndex_Bis, MARGIN = 1, FUN = function(x) variableV(x[1], x[2], m)) 
+  vectorVariablesV     = c(vectorVariablesV, vectorVariablesV_Seg)
+}
+ 
+numberVariablesV = numberVariablesB*numberSegments
+vectorC_auxVarV  = vector(mode = "numeric", length = numberVariablesV)  
+
+#------------------------------------------------------------------------------------------
+#-------------------------------------- Vector C - FINAL ----------------------------------
+#------------------------------------------------------------------------------------------
 #Number of variables W is equal to #N, where N is the set of {1,..., numberUnits}.
 #Number of variables Y can only be calculated after creating the vector that contains 
 #all the names associated with the valid variables Y[i1,i2]. Otherwise, the number of variables Y 
@@ -244,11 +302,11 @@ vectorC_auxVarZ  = vector(mode = "numeric", length = numberVariablesZ)
 numberVariablesW = numberUnits
 numberVariablesY = length(vectorVariablesY)
 numberVariablesX = length(vectorVariablesX)
-numberVariables  = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ
+numberVariables  = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ +
+                   numberVariablesB + numberVariablesLambda + numberVariablesV
 
-
-vectorVariables = c(vectorVariablesW, vectorVariablesY, vectorVariablesX, vectorVariablesZ)
-vectorC_Final   = as.vector(x= c(vectorC_PlanningCost, vectorC_ConnectivityCost, vectorC_ActionCost, vectorC_auxVarZ), mode = "numeric")	
+vectorVariables = c(vectorVariablesW, vectorVariablesY, vectorVariablesX, vectorVariablesZ, vectorVariablesB, vectorVariablesLambda, vectorVariablesV)
+vectorC_Final   = as.vector(x= c(vectorC_PlanningCost, vectorC_ConnectivityCost, vectorC_ActionCost, vectorC_auxVarZ, vectorC_auxVarB, vectorC_auxVarLambda, vectorC_auxVarV), mode = "numeric")	
 
 #Transform the vector into a "sparse" type
 vectorC_Final = as(object = vectorC_Final, Class = "sparseVector")
@@ -256,6 +314,7 @@ vectorC_Final = as(object = vectorC_Final, Class = "sparseVector")
 #vectorC_Final_Sparse = Matrix::sparseVector(x = vectorC_Final,i = 1:numberVariables, length = numberVariables)
 #object.size(vectorC_Final)
 #View(vectorC_Final)  
+
 
 #------------------------------------------------------------------------------------------
 #----- Matrix A - Coefficients associated with the variables of the first restriction -----
@@ -265,7 +324,7 @@ sizeRHS_MAMP2 = numberSpecies
 #matrixA_MAMP2 <- matrix(data = 0, nrow = sizeRHS_MAMP2, ncol = numberVariables)
 matrixA_MAMP2 <- Matrix(data = 0, nrow = sizeRHS_MAMP2, ncol = numberVariables, sparse = TRUE)
 
-# vectorIndexI_Xik  #Subindex of "i" variable X (creo que no se usa! no es necesario!)
+# vectorIndexI_Xik  #Subindex of "i" variable X (I think it's not used! It's not necessary!)
 # vectorIndexK_Xik  #Subindex of "k" variable X 
 # vectorIndex_i_Zis #Subindex of "i" variable Z 
 # vectorIndex_s_Zis #Subindex of "s" variable Z 
@@ -274,13 +333,21 @@ posX_Xik = 0
 posY_Xik = 0
 posX_Zis = 0
 posY_Zis = 0
+#NEW!
+posX_Bis = 0
+posY_Bis = 0
 
 #Break points (x axis) of vector C, which indicate the separations of each set of variables that are within that vector.
 break_1 = 0
 break_2 = numberVariablesW
 break_3 = numberVariablesW + numberVariablesY
 break_4 = numberVariablesW + numberVariablesY + numberVariablesX
-break_5 = numberVariables
+break_5 = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ
+#NEW!
+break_6 = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ + numberVariablesB
+break_7 = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ + numberVariablesB + numberVariablesLambda
+break_8 = numberVariables
+
 
 for(s in 1:numberSpecies){
   subset_Is <- Is[[s]] #The subset is a vector of integers following its definition in C ++.
@@ -289,18 +356,23 @@ for(s in 1:numberSpecies){
     subset_Ki        <- Ki[[i]]
     subset_Ki_Ks     <- intersect(subset_Ki,subset_Ks)
     intersectionSize <- length(subset_Ki_Ks)
-    # print(paste("unit ->" , i))
-    # print(paste("subset_Ki ->" , subset_Ki) )
-    # print(paste("intersectionSize ->" , intersectionSize) )
     
     if(intersectionSize != 0){
-      coeff_Xik = 1/intersectionSize
-      for(k in subset_Ki_Ks){
-        varX     = variableX(i,k)
-        posX_Xik = break_3 + match(varX, vectorVariablesX) 
-        posY_Xik = s
-        matrixA_MAMP2[ posY_Xik, posX_Xik] =  coeff_Xik
-      }#END internal for (about Threats!)
+      if(exponent == 1){#If the exponent = 1, the "local benefit function" of WAMP.2 does NOT need a linearization strategy.
+        coeff_Xik = 1/intersectionSize
+        for(k in subset_Ki_Ks){
+          varX     = variableX(i,k)
+          posX_Xik = break_3 + match(varX, vectorVariablesX) 
+          posY_Xik = s
+          matrixA_MAMP2[ posY_Xik, posX_Xik] =  coeff_Xik
+        }#END internal for (about Threats!)
+      }else{#When the exponent != 1
+        coeff_Bis = 1
+        varB      = variableB(i,s)
+        posX_Bis  = break_5 + match(varB, vectorVariablesB)
+        posY_Bis  = s
+        matrixA_MAMP2[ posY_Bis, posX_Bis] = coeff_Bis
+      }#END internal_1 if-else (about the exponent!)
       
     }else{#When |Ki intersect Ks| = 0
       coeff_Zis = 1
@@ -308,18 +380,19 @@ for(s in 1:numberSpecies){
       posX_Zis  = break_4 + match(varZ, vectorVariablesZ)
       posY_Zis  = s
       matrixA_MAMP2[ posY_Zis, posX_Zis] = coeff_Zis
-    }#END internal if-else 
+    }#END internal_2 if-else (about the intersection of subsets!)
   }#END external_1 for (about Planning Units!)
 }#END external_2 for (about Species!)
 
-#View(matrixA_MAMP2[ , (break_3+1):numberVariables])
+
+#View( vectorVariables[(break_3+1):numberVariables]  )
+#View( matrixA_MAMP2[ , (break_3+1):numberVariables] )
 
 #------------------------------------------------------------------------------------------
 #---- Matrix A - Coefficients associated with the variables of the second restriction -----
 #--------------------------------------- (MAMP. 3) ----------------------------------------
 #------------------------------------------------------------------------------------------
 sizeRHS_MAMP3 = numberUnits
-#matrixA_MAMP3 <- matrix(data = 0, nrow = sizeRHS_MAMP3, ncol = numberVariables)
 matrixA_MAMP3 <- Matrix(data = 0, nrow = sizeRHS_MAMP3, ncol = numberVariables, sparse = TRUE)
 
 posX_Wi  = 0
@@ -354,8 +427,7 @@ for(i in 1:numberUnits){
 if(numberVariablesZ != 0){
   #auxiliarySet_unitsZis is a set of planning units where there is an associated variable Z[i,s].
   auxSet_unitsZis = unique(vectorIndex_i_Zis) 
-  sizeRHS_MAMP4 = length(auxSet_unitsZis)
-  #matrixA_MAMP4 <- matrix(data = 0, nrow = sizeRHS_MAMP4, ncol = numberVariables)
+  sizeRHS_MAMP4   = length(auxSet_unitsZis)
   matrixA_MAMP4 <- Matrix(data = 0, nrow = sizeRHS_MAMP4, ncol = numberVariables, sparse = TRUE)
   
   posX_Wi  = 0
@@ -386,7 +458,6 @@ if(numberVariablesZ != 0){
 } 
 
 
-
 #------------------------------------------------------------------------------------------
 # Matrix A - Coefficients associated the linearisation of the MAMP model objective function 
 #-------------- (3 restrictions for each variable Y[i1,i2]) -------------------------------
@@ -394,7 +465,6 @@ if(numberVariablesZ != 0){
 if(beta1 != 0){
   #Linearity constraints for the fragmentation of planning units.
   sizeRHS_MAMP6 = 3*numberVariablesY 
-  #matrixA_MAMP6 <- matrix(data = 0, nrow = sizeRHS_MAMP6, ncol = numberVariables)
   matrixA_MAMP6 <- Matrix(data = 0, nrow = sizeRHS_MAMP6, ncol = numberVariables, sparse = TRUE)
   
   auxNumberUnits = numberUnits + 1
@@ -429,47 +499,232 @@ if(beta1 != 0){
     matrixA_MAMP6[ posY_Yij_ct3 , index_i2 ] = -1 
   }
   #View(matrixA_MAMP6)
-  matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP6)
+  
 }else{
-  matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4)
+  sizeRHS_MAMP6 = 0
+  matrixA_MAMP6 <- Matrix(data = 0, nrow = sizeRHS_MAMP6, ncol = numberVariables, sparse = TRUE)
 } 
 
-#View(matrixA_Final)
-#object.size(matrixA_Final)/(1024*1024)
 
+#------------------------------------------------------------------------------------------
+#- Matrix A - Coefficients associated the linearisation of the MAMP model cubic constraint  
+#--------------------------------------- (MAMP. 7) ----------------------------------------
+#------------------------------------------------------------------------------------------
+sizeRHS_MAMP7 = numberVariablesLambda
+#matrixA_MAMP7 <- matrix(data = 0, nrow = sizeRHS_MAMP7, ncol = numberVariables)
+matrixA_MAMP7 <- Matrix(data = 0, nrow = sizeRHS_MAMP7, ncol = numberVariables, sparse = TRUE)
+
+posX_LAMBDAism = 0
+posY_LAMBDAism = 0
+
+posX_Vism = 0
+posY_Vism = 0
+
+coeff_LAMBDAism = 1
+coeff_Vism      = -1
+
+for(l in 1: numberVariablesLambda){
+  posX_LAMBDAism = break_6 + l
+  posY_LAMBDAism = l
+  
+  posX_Vism = break_7 + l
+  posY_Vism = l
+  
+  matrixA_MAMP7[ posY_LAMBDAism, posX_LAMBDAism ] = coeff_LAMBDAism  
+  matrixA_MAMP7[ posY_Vism     , posX_Vism      ] = coeff_Vism  
+}
+# View(matrixA_MAMP7)
+# View( vectorVariables[(break_6+1):numberVariables]  )
+# View( matrixA_MAMP7[ , (break_6+1):numberVariables] )
+
+#------------------------------------------------------------------------------------------
+#- Matrix A - Coefficients associated the linearisation of the MAMP model cubic constraint  
+#--------------------------------------- (MAMP. 8) ----------------------------------------
+#------------------------------------------------------------------------------------------
+sizeRHS_MAMP8 = numberVariablesB
+#matrixA_MAMP8 <- matrix(data = 0, nrow = sizeRHS_MAMP8, ncol = numberVariables)
+matrixA_MAMP8 <- Matrix(data = 0, nrow = sizeRHS_MAMP8, ncol = numberVariables, sparse = TRUE)
+
+posX_Vism  = 0
+posY_Vism  = 0
+coeff_Vism = 1
+
+for(l in 1:numberVariablesB){
+  posY_Vism = l;
+  for(m in 1:numberSegments){
+    posX_Vism = break_7 + (numberVariablesB*m - numberVariablesB) + l;
+    matrixA_MAMP8[posY_Vism, posX_Vism] = coeff_Vism  
+  }
+}
+
+#View( vectorVariables[(break_7+1):numberVariables]  )
+#View( matrixA_MAMP8[ , (break_7+1):numberVariables] )
+
+
+#------------------------------------------------------------------------------------------
+#- Matrix A - Coefficients associated the linearisation of the MAMP model cubic constraint  
+#--------------------------------------- (MAMP. 9) ----------------------------------------
+#------------------------------------------------------------------------------------------
+sizeRHS_MAMP9 = numberVariablesB
+#matrixA_MAMP9 <- matrix(data = 0, nrow = sizeRHS_MAMP9, ncol = numberVariables)
+matrixA_MAMP9 <- Matrix(data = 0, nrow = sizeRHS_MAMP9, ncol = numberVariables, sparse = TRUE)
+
+posX_LAMBDAism  = 0
+posY_LAMBDAism  = 0
+coeff_LAMBDAism = 0
+
+posX_Vism  = 0
+posY_Vism  = 0
+coeff_Vism = 0
+
+posX_Xik  = 0
+posY_Xik  = 0
+coeff_Xik = 0
+
+#matrixIndex_Bis;
+
+for(l in 1:numberVariablesB){
+  posY_Xik       = l
+  posY_LAMBDAism = l
+  posY_Vism      = l
+  
+  i = as.integer(matrixIndex_Bis[l,1])
+  s = as.integer(matrixIndex_Bis[l,2])
+  
+  subset_Ki        = Ki[[i]] #The subset is a vector of integers following its definition in C ++.
+  subset_Ks        = Ks[[s]]
+  subset_Ki_Ks     = intersect(subset_Ki,subset_Ks)
+  intersectionSize = length(subset_Ki_Ks)
+  coeff_Xik        = 1/intersectionSize
+  
+  for(k in subset_Ki_Ks){
+    varX     = variableX(i,k)
+    posX_Xik = break_3 + match(varX, vectorVariablesX) 
+    matrixA_MAMP9[ posY_Xik, posX_Xik] = coeff_Xik
+  }#END internal_1 for
+  
+  for(m in 1:numberSegments){
+    posX_LAMBDAism = break_6 + (numberVariablesB*m - numberVariablesB) + l;
+    posX_Vism      = break_7 + (numberVariablesB*m - numberVariablesB) + l;
+    
+    coeff_LAMBDAism = -1*( bp[m+1] - bp[m] )
+    coeff_Vism      = -1*( bp[m] )
+    
+    matrixA_MAMP9[posY_LAMBDAism, posX_LAMBDAism] = coeff_LAMBDAism  
+    matrixA_MAMP9[posY_Vism,      posX_Vism]      = coeff_Vism  
+  }#END internal_2 for
+  
+}#END external for
+
+# View( vectorVariables[(break_3+1):numberVariables]  )
+# View( matrixA_MAMP9[ , (break_3+1):numberVariables] )
+
+#------------------------------------------------------------------------------------------
+#- Matrix A - Coefficients associated the linearisation of the MAMP model cubic constraint  
+#--------------------------------------- (MAMP. 10) ---------------------------------------
+#------------------------------------------------------------------------------------------
+sizeRHS_MAMP10 = numberVariablesB
+#matrixA_MAMP10  <- matrix(data = 0, nrow = sizeRHS_MAMP10, ncol = numberVariables)
+matrixA_MAMP10 <- Matrix(data = 0, nrow = sizeRHS_MAMP10, ncol = numberVariables, sparse = TRUE)
+
+posX_Bis  = 0
+posY_Bis  = 0
+coeff_Bis = 0
+
+posX_LAMBDAism  = 0
+posY_LAMBDAism  = 0
+coeff_LAMBDAism = 0
+
+posX_Vism  = 0
+posY_Vism  = 0
+coeff_Vism = 0
+
+for(l in 1:numberVariablesB){
+  posY_Bis       = l
+  posY_LAMBDAism = l
+  posY_Vism      = l
+  
+  posX_Bis  = break_5 + l
+  coeff_Bis = 1
+  matrixA_MAMP10[posY_Bis, posX_Bis] = coeff_Bis  
+  
+  for(m in 1:numberSegments){
+    posX_LAMBDAism = break_6 + (numberVariablesB*m - numberVariablesB) + l;
+    posX_Vism      = break_7 + (numberVariablesB*m - numberVariablesB) + l;
+    
+    coeff_LAMBDAism = -1*( bp3[m+1] - bp3[m] )
+    coeff_Vism      = -1*( bp3[m] )
+    
+    matrixA_MAMP10[posY_LAMBDAism, posX_LAMBDAism] = coeff_LAMBDAism  
+    matrixA_MAMP10[posY_Vism,      posX_Vism]      = coeff_Vism  
+  }#END internal for
+}#END external for
+
+# View( vectorVariables[(break_5+1):numberVariables]  )
+# View( matrixA_MAMP10[ , (break_5+1):numberVariables] )
+
+#------------------------------------------------------------------------------------------
+if(beta1 != 0){
+  matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP6, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10)
+  
+}else{#Particular case!
+  matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10)
+}
+
+#View(matrixA_Final)
+object.size(matrixA_Final)/(1024*1024)
 #------------------------------------------------------------------------------------------
 #----------------- Vector b - Parameters associated with all restrictions -----------------
 #-------------------------------- (RHS, right-hand side) ----------------------------------
 #------------------------------------------------------------------------------------------
-sizeRHS = sizeRHS_MAMP2 + sizeRHS_MAMP3 + sizeRHS_MAMP4
+#sizeRHS = sizeRHS_MAMP2 + sizeRHS_MAMP3 + sizeRHS_MAMP4
 
-vectorb_MAMP2 = as.vector(x = ts, mode = "numeric")
-vectorb_MAMP3 = vector(mode = "numeric", length = sizeRHS_MAMP3)
-vectorb_MAMP4 = vector(mode = "numeric", length = sizeRHS_MAMP4)
-vectorb_MAMP6 = rep(c(0,0,-1), numberVariablesY)
+vectorb_MAMP2  = as.vector(x = ts, mode = "numeric")
+vectorb_MAMP3  = vector(mode = "numeric", length = sizeRHS_MAMP3)
+vectorb_MAMP4  = vector(mode = "numeric", length = sizeRHS_MAMP4)
+vectorb_MAMP6  = rep(c(0,0,-1), numberVariablesY)
+
+vectorb_MAMP7  = vector(mode = "numeric", length = sizeRHS_MAMP7)
+vectorb_MAMP8  = rep(1, sizeRHS_MAMP8)
+vectorb_MAMP9  = vector(mode = "numeric", length = sizeRHS_MAMP9)
+vectorb_MAMP10 = vector(mode = "numeric", length = sizeRHS_MAMP10)
 
 #Transform the vector into a "sparse" type
-vectorb_Final = c(vectorb_MAMP2, vectorb_MAMP3, vectorb_MAMP4, vectorb_MAMP6)
+vectorb_Final = c(vectorb_MAMP2, vectorb_MAMP3, vectorb_MAMP4, vectorb_MAMP6, vectorb_MAMP7, vectorb_MAMP8, vectorb_MAMP9, vectorb_MAMP10)
 vectorb_Final = as(object = vectorb_Final, Class = "sparseVector")
 #------------------------------------------------------------------------------------------
 #------------------------ Others inputs parameters for the solver -------------------------
 #------------ (Vector of sense, Vector of bounds, and Vector of variables type ) ----------
 #------------------------------------------------------------------------------------------
-vectorSense_MAMP2 = rep(">=", sizeRHS_MAMP2)
-vectorSense_MAMP3 = rep("<=", sizeRHS_MAMP3)
-vectorSense_MAMP4 = rep("<=", sizeRHS_MAMP4)
-vectorSense_MAMP6 = rep( c("<=","<=",">="), numberVariablesY)
+vectorSense_MAMP2  = rep(">=", sizeRHS_MAMP2)
+vectorSense_MAMP3  = rep("<=", sizeRHS_MAMP3)
+vectorSense_MAMP4  = rep("<=", sizeRHS_MAMP4)
+vectorSense_MAMP6  = rep( c("<=","<=",">="), numberVariablesY)
+vectorSense_MAMP7  = rep("<=", sizeRHS_MAMP7)  #NEW!
+vectorSense_MAMP8  = rep("==", sizeRHS_MAMP8)  #NEW!
+vectorSense_MAMP9  = rep("==", sizeRHS_MAMP9)  #NEW!
+vectorSense_MAMP10 = rep("==", sizeRHS_MAMP10) #NEW!
 
-vectorSense_Final = c(vectorSense_MAMP2, vectorSense_MAMP3, vectorSense_MAMP4, vectorSense_MAMP6)
+vectorSense_Final  = c(vectorSense_MAMP2, vectorSense_MAMP3, vectorSense_MAMP4, vectorSense_MAMP6, vectorSense_MAMP7, vectorSense_MAMP8, vectorSense_MAMP9, vectorSense_MAMP10)
 
+# CAMBIAR!
 vectorBounds <- list(lower = list(ind = seq(1:numberVariables), val = rep(0,numberVariables)),
                      upper = list(ind = seq(1:numberVariables), val = rep(1,numberVariables)))
 
-vectorVariablestype = rep("B", numberVariables) 
+#"C", "I", and "B" corresponding to continuous, integer, and binary, respectively, or NULL (default), taken as all-continuous.
+vectorVarType_W      = rep("B", numberVariablesW) 
+vectorVarType_Y      = rep("B", numberVariablesY) 
+vectorVarType_X      = rep("B", numberVariablesX) 
+vectorVarType_Z      = rep("B", numberVariablesZ) 
+vectorVarType_B      = rep("C", numberVariablesB) 
+vectorVarType_Lambda = rep("C", numberVariablesLambda) 
+vectorVarType_V      = rep("B", numberVariablesV) 
 
+vectorVarType_Final  = c( vectorVarType_W, vectorVarType_Y, vectorVarType_X, vectorVarType_Z, vectorVarType_B, vectorVarType_Lambda, vectorVarType_V)
+  
+  
 
 preprocessingTime_2 = Sys.time() ; preprocessingTime = preprocessingTime_2 - preprocessingTime_1
-
 #------------------------------------------------------------------------------------------
 #------------------------------- Solvers (Rsymphony - GLPK) -------------------------------
 #------------------------------------------------------------------------------------------
@@ -481,7 +736,7 @@ mat      <- matrixA_Final
 dir      <- vectorSense_Final
 rhs      <- vectorb_Final
 bounds   <- vectorBounds
-types    <- vectorVariablestype #"C", "I",and "B" corresponding to continuous, integer, and binary variables.
+types    <- vectorVarType_Final #"C", "I",and "B" corresponding to continuous, integer, and binary variables.
 max      <- FALSE               #max <- TRUE means F.O = maximize / max <- FALSE means F.O = minimize
 write_lp <- TRUE                #Optional!
 write_lp <- TRUE                #Optional!
@@ -499,11 +754,11 @@ print(paste("Preprocessing Time (matrix construction) = ", round(preprocessingTi
 print(paste("Processing Time (solver execution) = ", round(processingTime, 2), "seg.") )
 
 
-#GLPK Solver!
-modelSolver_GLPK <- Rglpk::Rglpk_solve_LP(obj, mat, dir, rhs, bounds = bounds,
-                                          types = types, max=max)
-print(modelSolver_GLPK)
-
+# #GLPK Solver!
+# modelSolver_GLPK <- Rglpk::Rglpk_solve_LP(obj, mat, dir, rhs, bounds = bounds,
+#                                           types = types, max=max)
+# print(modelSolver_GLPK)
+# 
 
 
 

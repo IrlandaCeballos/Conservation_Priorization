@@ -21,9 +21,10 @@ public:
   DataFrame data05; //Equivalent to threatsDistribution_Data
   DataFrame data06; //Equivalent to sensibility_Data
   DataFrame data07; //Equivalent to actionCost_Data
+
   
   void print();
-  int getB();
+  double getBeta1();
   int getUnits();
   int getSpecies();
   int getThreats();
@@ -36,12 +37,24 @@ public:
   std::map<int,std::map<int,bool>> getSensibility();
   std::map<int,std::map<int,double>> getBoundary();
   List getSet(String setName);
+  //New methods for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
+  double getExponent();
+  int getBreakpoints();
+  int getSegments();
+  NumericVector get_bp();
+  NumericVector get_bp3();
+  NumericVector get_slope();
   
 private:
-  int units   = getUnits();
-  int species = getSpecies();
-  int threats = getThreats();
-  
+  int units    = getUnits();
+  int species  = getSpecies();
+  int threats  = getThreats();
+  double beta1 = 0.0;
+  //New input data for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
+  double exponent = 0.2;  //Equivalent to exponent
+  int breakpoints = 4;    //Equivalent to numberBreakpoints
+  int segments    = getSegments(); //NEW! Equivalent to numberSegments
+   
 };
 
 

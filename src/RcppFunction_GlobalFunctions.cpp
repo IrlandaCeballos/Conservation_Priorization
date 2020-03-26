@@ -138,6 +138,51 @@ String variableZ(int indexI, int indexS){
   return varZ;
 }
 
+/* 
+ * Function sets the name of a variable "B" with is respective index "i" and "s" (i.e, "B[i,s]").
+ */
+// [[Rcpp::export(name = "variableB")]]
+String variableB(int indexI, int indexS){
+  std::string index_I       = std::to_string(indexI);
+  std::string index_S       = std::to_string(indexS);
+  std::string parenthesis_1 = "[";
+  std::string parenthesis_2 = "]";
+  std::string comma         = ",";
+  std::string varB          = "B" + parenthesis_1 + index_I + comma + index_S + parenthesis_2;
+  return varB;
+}
+
+/* 
+ * Function sets the name of a variable "Lambda" with is respective sub-index "i", "s" and "m" (i.e, "Lambda[i,s,m]").
+ */
+// [[Rcpp::export(name = "variableLambda")]]
+String variableLambda(int indexI, int indexS, int indexM){
+  std::string index_I       = std::to_string(indexI);
+  std::string index_S       = std::to_string(indexS);
+  std::string index_M       = std::to_string(indexM);
+  std::string parenthesis_1 = "[";
+  std::string parenthesis_2 = "]";
+  std::string comma         = ",";
+  std::string varLambda     = "Lambda" + parenthesis_1 + index_I + comma + index_S + comma + index_M + parenthesis_2;
+  return varLambda;
+}
+
+/* 
+ * Function sets the name of a variable "V" with is respective sub-index "i", "s" and "m" (i.e, "V[i,s,m]").
+ */
+// [[Rcpp::export(name = "variableV")]]
+String variableV(int indexI, int indexS, int indexM){
+  std::string index_I       = std::to_string(indexI);
+  std::string index_S       = std::to_string(indexS);
+  std::string index_M       = std::to_string(indexM);
+  std::string parenthesis_1 = "[";
+  std::string parenthesis_2 = "]";
+  std::string comma         = ",";
+  std::string varV          = "V" + parenthesis_1 + index_I + comma + index_S + comma + index_M + parenthesis_2;
+  return varV;
+}
+
+
 /*
  * Function that creates the original matrix "cv[i1, i2]" from the information of the 
  * dataframe "boundary_Data" (dense matrix with tuple data). 

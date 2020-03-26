@@ -10,8 +10,7 @@
 //CONSTRUCTORS.
 //MAMPData::MAMPData() :x(0), y(0) { } //To set a default constructor!
 //(NOTE: it's advisable to change the name of data01 -> _data01)
-MAMPData::MAMPData(DataFrame _data01, DataFrame _data02, DataFrame _data03, DataFrame _data04, DataFrame _data05, DataFrame _data06, DataFrame _data07) : data01(_data01), data02(_data02), data03(_data03), data04(_data04), data05(_data05), data06(_data06), data07(_data07) { }
-
+MAMPData::MAMPData(DataFrame _data01, DataFrame _data02, DataFrame _data03, DataFrame _data04, DataFrame _data05, DataFrame _data06, DataFrame _data07 ) : data01(_data01), data02(_data02), data03(_data03), data04(_data04), data05(_data05), data06(_data06), data07(_data07) { }
 
 //METHOD: It gives you the message "Hello world!"
 void MAMPData::print(){
@@ -21,11 +20,10 @@ void MAMPData::print(){
 }
 
 //METHOD: It gives you an 'INT Number' from: parameter B.
-int MAMPData::getB(){
-  //'Parameter B' is a boundary length modiﬁer: it can be varied for more or less connected reserve systems. 
-  //'Parameter B' = 1 by default!
-  int parameterB = 1; 
-  return parameterB;
+double MAMPData::getBeta1(){
+  //'beta1' is a boundary length modiﬁer: it can be varied for more or less connected reserve systems. 
+  //'beta1' = 1 by default!
+  return beta1;
 }
 
 //METHOD: It gets you an 'INT Number' from: Planning Units (returns the number of planning units).
@@ -263,7 +261,66 @@ List MAMPData::getSet(String setName){
   return setRequired;
 }
 
+//New methods for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
+//METHOD:
+double MAMPData::getExponent(){
+  return exponent;
+}
 
+//METHOD:
+int MAMPData::getBreakpoints(){
+  return breakpoints;
+}
+
+//METHOD:
+int MAMPData::getSegments(){
+  int segments = breakpoints - 1;
+  return segments;
+}
+
+//METHOD:
+NumericVector MAMPData::get_bp(){
+  //"bp" is a numerical vector of cardinality equal to the number of breakpoints.
+  NumericVector bp(breakpoints); 
+  double valueX;
+  
+  for(int m = 1; m <= breakpoints; m++){
+    valueX    = (1.0/segments)*(m - 1);
+    bp(m - 1) = valueX;
+  }
+  return bp;     
+} 
+
+//METHOD:
+NumericVector MAMPData::get_bp3(){
+  //"bp3" is a numerical vector of cardinality equal to the number of breakpoints.
+  NumericVector bp3(breakpoints); 
+  NumericVector bp = get_bp();
+  double valueY;
+  
+  for(int m = 1; m <= breakpoints; m++){
+    valueY     = pow( bp(m - 1) , exponent );
+    bp3(m - 1) = valueY;
+  }
+  return bp3;
+}
+
+//METHOD:
+NumericVector MAMPData::get_slope(){
+  //"slope" is a numerical vector of cardinality equal to the number of segments.
+  NumericVector slope(segments);
+  NumericVector bp  = get_bp();
+  NumericVector bp3 = get_bp3();
+  double deltaY = 0.0;
+  double deltaX = 0.0;
+  
+  for(int m = 0; m < segments; m++){
+    deltaY = bp3(m + 1) - bp3(m);
+    deltaX = bp(m + 1) - bp(m); 
+    slope(m) = deltaY/deltaX;
+  }
+  return slope;
+}
 
 //RCPP 'EXPOSURE BLOCK'.
 RCPP_MODULE(MAMPDatamodule){
@@ -277,9 +334,12 @@ RCPP_MODULE(MAMPDatamodule){
   .field( "data05", &MAMPData::data05, "documentation for data05")
   .field( "data06", &MAMPData::data06, "documentation for data06")
   .field( "data07", &MAMPData::data07, "documentation for data07")
+  //New input data for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
+  //.field( "exponent", &MAMPData::exponent   , "documentation for exponent")
+  //.field( "breakpoints", &MAMPData::breakpoints, "documentation for breakpoints")
 
   .method( "print", &MAMPData::print,  "documentation for print")
-  .method( "getB",  &MAMPData::getB,   "documentation for getB")
+  .method( "getBeta1",  &MAMPData::getBeta1,   "documentation for getBeta1")
   .method( "getUnits",   &MAMPData::getUnits,   "documentation for getUnits")
   .method( "getSpecies", &MAMPData::getSpecies, "documentation for getSpecies")
   .method( "getThreats", &MAMPData::getThreats, "documentation for getThreats")
@@ -291,6 +351,15 @@ RCPP_MODULE(MAMPDatamodule){
   .method( "getThreatsDistribution", &MAMPData::getThreatsDistribution, "documentation for getThreatsDistribution")
   .method( "getSensibility", &MAMPData::getSensibility, "documentation for getSensibility")
   .method( "getBoundary",    &MAMPData::getBoundary,    "documentation for getBoundary")
-  .method( "getSet",         &MAMPData::getSet,         "documentation for getSet");
+  .method( "getSet",         &MAMPData::getSet,         "documentation for getSet")
+  //New methods for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
+  .method( "getExponent",    &  MAMPData::getExponent,  "documentation for getExponent")
+  .method( "getBreakpoints", &MAMPData::getBreakpoints, "documentation for getBreakpoints")
+  .method( "getSegments",    &MAMPData::getSegments,    "documentation for getSegments")
+  .method( "get_bp",         &MAMPData::get_bp,         "documentation for get_bp") 
+  .method( "get_bp3",        &MAMPData::get_bp3,        "documentation for get_bp3") 
+  .method( "get_slope",      &MAMPData::get_slope,      "documentation for get_slope")   
+  
+  ; //ATENTION! With ";" 
 }
 
