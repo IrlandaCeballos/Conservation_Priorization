@@ -5,7 +5,12 @@ setwd("C:/Users/Irlanda Ceballos/Documents/GitHub/Conservation_Priorization")
 sourceCpp(file = "src/RcppClass_MAMPData.cpp")
 sourceCpp(file = "src/RcppFunction_GlobalFunctions.cpp")
 
+nameInstanceRun = "runMAMP-E_15.txt"
 preprocessingTime_1 = Sys.time()
+
+#Instalación de GUROBI Solver
+#install.packages("c:/gurobi901/win64/R/gurobi_9.0-1.zip", repos = NULL)
+#install.packages("slam", repos = "https://cloud.r-project.org")
 
 # # Lectura de datos (inputs) de MARXAN/MAMP (inputs: 10 units/ 5 species/ 3 threats)
 # #------------------------------------------------------------------------------------------
@@ -64,12 +69,13 @@ actionCost_Data <- as.data.frame( read_delim("data/data_Small/actionCost_Small.c
 #                                              ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
 
 #------------------------------------------------------------------------------------------
-#------------- # MAMP (with gamma = 1), con Rsymphony Solver (de la API de R) -------------
+#------------------ # MAMP and MAMP-E, with Rsymphony Solver (from R API) -----------------
 #------------------------------------------------------------------------------------------
 #Observation: "MAMPData" Class was writen in the C++ language.
 problemData = new(MAMPData, target_Data, unitCost_Data, boundary_Data, speciesDistribution_Data, threatsDistribution_Data, sensibility_Data, actionCost_Data)
 
 beta1             = problemData$getBeta1()       #beta1 set in 1 for default!
+beta2             = problemData$getBeta2()       #beta2 set in 1 for default!
 exponent          = problemData$getExponent()    #exponent set in 3 for default!
 numberBreakpoints = problemData$getBreakpoints() #numberBreakpoints set in 4 for default!
 numberSegments    = problemData$getSegments()    #numberBreakpoints = (numberBreakpoints - 1) for default!
@@ -125,7 +131,7 @@ for(l in 1:boundarySize){#OJO!:VER COMO OPTIMIZAR ESTA PARTE CUANDO beta1 == 0
       auxCoeff              = connectivityVector[i]
       connectivityVector[i] = auxCoeff + connectivityCoeff
       #This allows you to specify in a set, the values associated with W[i] that are linked to Y[i1][i2]
-      #Here, we suppose that the original quadrate matrix cm[i1,i2], is symmetric!
+      #Here, we suppose that the original quadrate matrix cv[i1,i2], is symmetric!
     }
     if(index_i2 == i){
       auxCoeff              = connectivityVector[i]
@@ -139,6 +145,7 @@ for(l in 1:boundarySize){#OJO!:VER COMO OPTIMIZAR ESTA PARTE CUANDO beta1 == 0
 vectorC_UnitCost      <- as.vector( x = unitCost_Data[,2] , mode = "numeric" )
 vectorC_PlanningCost  <- vectorC_UnitCost + connectivityVector
 
+numberVariablesW = numberUnits
 
 #------------------------------------------------------------------------------------------
 #-------------- Vector C - Coefficients associated with the connectivity cost -------------
@@ -175,6 +182,7 @@ if(beta1 != 0){
   }
 }#END If
 
+numberVariablesY = length(vectorVariablesY)
 
 #------------------------------------------------------------------------------------------
 #----------------- Vector C - Coefficients associated with the action cost ----------------
@@ -265,7 +273,7 @@ vectorC_auxVarB  = vector(mode = "numeric", length = numberVariablesB)
 #---------------- (coefficients associated with Lambda[i,s,m] variables) ------------------
 #------------------------------------------------------------------------------------------
 vectorVariablesLambda     = c()
-vectorVariablesLambda_Seg = vector(mode = "numeric", length = numberVariablesB)
+vectorVariablesLambda_Seg = vector(mode = "character", length = numberVariablesB)
 
 for(m in 1:numberSegments){
   vectorVariablesLambda_Seg = apply(X = matrixIndex_Bis, MARGIN = 1, FUN = function(x) variableLambda(x[1], x[2], m)) 
@@ -280,7 +288,7 @@ vectorC_auxVarLambda  = vector(mode = "numeric", length = numberVariablesLambda)
 #------------------- (coefficients associated with V[i,s,m] variables) --------------------
 #------------------------------------------------------------------------------------------
 vectorVariablesV     = c()
-vectorVariablesV_Seg = vector(mode = "numeric", length = numberVariablesB)
+vectorVariablesV_Seg = vector(mode = "character", length = numberVariablesB)
 
 for(m in 1:numberSegments){
   vectorVariablesV_Seg = apply(X = matrixIndex_Bis, MARGIN = 1, FUN = function(x) variableV(x[1], x[2], m)) 
@@ -289,6 +297,86 @@ for(m in 1:numberSegments){
  
 numberVariablesV = numberVariablesB*numberSegments
 vectorC_auxVarV  = vector(mode = "numeric", length = numberVariablesV)  
+
+#------------------------------------------------------------------------------------------
+#-- Vector C - Coefficients associated with the cost of spatial fragmentation of actions --
+#------------------- (coefficients associated with P[i1,i2,k] variables) ------------------
+#------------------------------------------------------------------------------------------
+#Important observation!
+#If beta2 = 0, the P[i1,i2,k] variables and the linearization restrictions associated with these variables are not required!
+if(beta2 != 0){
+  vectorIndex_i1_Yij = c();
+  vectorIndex_i2_Yij = c();
+  for(i in 1:numberUnits){
+    for(j in 1:numberUnits){
+      if(i!=j && matrix_cv[i,j] != 0){
+        vectorIndex_i1_Yij = c(vectorIndex_i1_Yij, i)
+        vectorIndex_i2_Yij = c(vectorIndex_i2_Yij, j)
+      }
+    }
+  }
+
+  #Matrix ordered by i1 and then by i2 (since its creation).
+  matrixIndex_Yi1i12   = cbind(vectorIndex_i1_Yij, vectorIndex_i2_Yij)
+  matrixIndex_Pi1i12k  = matrix(data = 0, nrow = 0, ncol = 3);
+  boundarySize         = nrow(matrixIndex_Yi1i12)
+  vectorVariablesP     = c()
+  vectorC_auxVarP      = c()
+  
+  for(l in 1:boundarySize){
+    i1 = matrixIndex_Yi1i12[l,1]
+    i2 = matrixIndex_Yi1i12[l,2]  
+    subset_Ki1       = Ki[[i1]]
+    subset_Ki2       = Ki[[i2]]
+    subset_Ki1_Ki2   = intersect(subset_Ki1,subset_Ki2)
+    intersectionSize = length(subset_Ki1_Ki2)
+    
+    if(intersectionSize != 0){
+      for(k in subset_Ki1_Ki2){
+        vectorAux            = as.vector(x = cbind(i1, i2, k), mode = "integer")  
+        matrixIndex_Pi1i12k  = rbind(matrixIndex_Pi1i12k, vectorAux)
+      }#END internal for
+    }#END if  
+      
+  }#END external for
+
+  matrixIndex_Pi1i12k = matrixIndex_Pi1i12k[order(matrixIndex_Pi1i12k[,1], matrixIndex_Pi1i12k[,2], matrixIndex_Pi1i12k[,3]), ] #The last comma "," is necessary!
+  colnames(matrixIndex_Pi1i12k) = c("i1","i2","k")
+  rownames(matrixIndex_Pi1i12k) = c(1:nrow(matrixIndex_Pi1i12k))
+  
+  vectorVariablesP = apply(X = matrixIndex_Pi1i12k, MARGIN = 1, FUN = function(x) variableP(x[1],x[2],x[3]) );
+  vectorC_auxVarP  = apply(X = matrixIndex_Pi1i12k, MARGIN = 1, FUN = function(x) -1*beta2*matrix_cv[x[1],x[2]] ) 
+
+#------------------------------------------------------------------------------------------
+#-- Vector C - Coefficients associated with the cost of spatial fragmentation of actions --
+#--------------------- (coefficients associated with X[i,k] variables) --------------------
+#------------------------------------------------------------------------------------------
+  numberVariablesP = length(vectorVariablesP)
+  for(l in 1:numberVariablesP){
+    i1       = matrixIndex_Pi1i12k[l,1]
+    i2       = matrixIndex_Pi1i12k[l,2]  
+    k        = matrixIndex_Pi1i12k[l,3]
+    varX_i1k   = variableX(i1, k)
+    coeff_Xi1k = beta2*matrix_cv[i1,i2]
+    
+    posX_Xi1k = match(varX_i1k, vectorVariablesX) 
+    #print(paste("posición Xi1,k ->", posX_Xi1k))
+    
+    auxCoeff  = vectorC_ActionCost[posX_Xi1k] 
+    vectorC_ActionCost[posX_Xi1k] = auxCoeff + coeff_Xi1k
+    
+  }#END external for
+  
+}else{
+  numberVariablesP = 0
+  vectorVariablesP = vector(mode = "character", length = numberVariablesP)
+  vectorC_auxVarP  = vector(mode = "numeric"  , length = numberVariablesP) 
+}
+
+#View(matrixIndex_Pi1i12k)
+#View(vectorVariablesP)
+#View(vectorC_auxVarP)
+#View(vectorC_ActionCost)
 
 #------------------------------------------------------------------------------------------
 #-------------------------------------- Vector C - FINAL ----------------------------------
@@ -303,17 +391,19 @@ numberVariablesW = numberUnits
 numberVariablesY = length(vectorVariablesY)
 numberVariablesX = length(vectorVariablesX)
 numberVariables  = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ +
-                   numberVariablesB + numberVariablesLambda + numberVariablesV
+                   numberVariablesB + numberVariablesLambda + numberVariablesV + numberVariablesP
 
-vectorVariables = c(vectorVariablesW, vectorVariablesY, vectorVariablesX, vectorVariablesZ, vectorVariablesB, vectorVariablesLambda, vectorVariablesV)
-vectorC_Final   = as.vector(x= c(vectorC_PlanningCost, vectorC_ConnectivityCost, vectorC_ActionCost, vectorC_auxVarZ, vectorC_auxVarB, vectorC_auxVarLambda, vectorC_auxVarV), mode = "numeric")	
+vectorVariables = c(vectorVariablesW, vectorVariablesY, vectorVariablesX, vectorVariablesZ, vectorVariablesB, vectorVariablesLambda, vectorVariablesV, vectorVariablesP)
+vectorC_Final   = as.vector(x= c(vectorC_PlanningCost, vectorC_ConnectivityCost, vectorC_ActionCost, vectorC_auxVarZ, vectorC_auxVarB, vectorC_auxVarLambda, vectorC_auxVarV, vectorC_auxVarP), mode = "numeric")	
 
 #Transform the vector into a "sparse" type
 vectorC_Final = as(object = vectorC_Final, Class = "sparseVector")
 
 #vectorC_Final_Sparse = Matrix::sparseVector(x = vectorC_Final,i = 1:numberVariables, length = numberVariables)
 #object.size(vectorC_Final)
+#View(vectorVariables)  
 #View(vectorC_Final)  
+
 
 
 #------------------------------------------------------------------------------------------
@@ -346,7 +436,8 @@ break_5 = numberVariablesW + numberVariablesY + numberVariablesX + numberVariabl
 #NEW!
 break_6 = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ + numberVariablesB
 break_7 = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ + numberVariablesB + numberVariablesLambda
-break_8 = numberVariables
+break_8 = numberVariablesW + numberVariablesY + numberVariablesX + numberVariablesZ + numberVariablesB + numberVariablesLambda + numberVariablesV
+break_9 = numberVariables
 
 
 for(s in 1:numberSpecies){
@@ -460,7 +551,7 @@ if(numberVariablesZ != 0){
 
 #------------------------------------------------------------------------------------------
 # Matrix A - Coefficients associated the linearisation of the MAMP model objective function 
-#-------------- (3 restrictions for each variable Y[i1,i2]) -------------------------------
+#------------------ (MAMP.6 - 3 restrictions for each variable Y[i1,i2]) ------------------
 #------------------------------------------------------------------------------------------
 if(beta1 != 0){
   #Linearity constraints for the fragmentation of planning units.
@@ -663,16 +754,88 @@ for(l in 1:numberVariablesB){
 # View( vectorVariables[(break_5+1):numberVariables]  )
 # View( matrixA_MAMP10[ , (break_5+1):numberVariables] )
 
+
+#------------------------------------------------------------------------------------------
+#- Matrix A - Coeffs. associated the linearisation of the MAMP-E model objective function -
+#---------------- (MAMP.11 - 3 restrictions for each variable P[i1,i2,k]) -----------------
+#------------------------------------------------------------------------------------------
+if(beta2 != 0){
+  sizeRHS_MAMP11 = 3*numberVariablesP
+  #matrixA_MAMP11 = matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables)
+  matrixA_MAMP11 = Matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables, sparse = TRUE)
+
+  posX_Pi1i2k     = 0
+  posY_Pi1i2k_ct1 = 0
+  posY_Pi1i2k_ct2 = 0
+  posY_Pi1i2k_ct3 = 0
+  
+  posX_Xi1k = 0
+  posX_Xi2k = 0
+  
+  for(l in 1: numberVariablesP){
+    i1        = matrixIndex_Pi1i12k[l,1]
+    i2        = matrixIndex_Pi1i12k[l,2]  
+    k         = matrixIndex_Pi1i12k[l,3]
+    varX_i1k  = variableX(i1, k)
+    varX_i2k  = variableX(i2, k)
+
+    posX_Pi1i2k     = break_8 + l
+    posY_Pi1i2k_ct1 = ( posX_Pi1i2k - (break_8 + 1) )*3 + 1
+    posY_Pi1i2k_ct2 = ( posX_Pi1i2k - (break_8 + 1) )*3 + 2
+    posY_Pi1i2k_ct3 = ( posX_Pi1i2k - (break_8 + 1) )*3 + 3
+    
+    posX_Xi1k = break_3 + match(varX_i1k, vectorVariablesX) 
+    posX_Xi2k = break_3 + match(varX_i2k, vectorVariablesX)  
+    
+    #Constraint number 1 (P[i1,i2,k] - X[i1,k] <= 0)  
+    matrixA_MAMP11[ posY_Pi1i2k_ct1, posX_Pi1i2k ] =  1
+    matrixA_MAMP11[ posY_Pi1i2k_ct1, posX_Xi1k   ] = -1
+    
+    #Constraint number 2 (P[i1,i2,k] - X[i2,k] <= 0)  
+    matrixA_MAMP11[ posY_Pi1i2k_ct2, posX_Pi1i2k ] =  1
+    matrixA_MAMP11[ posY_Pi1i2k_ct2, posX_Xi2k   ] = -1
+    
+    #Constraint number 3 (P[i1,i2,k] - X[i1,k] - X[i2,k] => -1)
+    matrixA_MAMP11[ posY_Pi1i2k_ct3, posX_Pi1i2k ] =  1
+    matrixA_MAMP11[ posY_Pi1i2k_ct3, posX_Xi1k   ] = -1
+    matrixA_MAMP11[ posY_Pi1i2k_ct3, posX_Xi2k   ] = -1
+      
+  }#END for
+}else{
+  sizeRHS_MAMP11 = 0
+  matrixA_MAMP11 = Matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables, sparse = TRUE)
+}#END if-else
+
+#View( matrixA_MAMP11[ , (break_3+1):numberVariables] )
+
 #------------------------------------------------------------------------------------------
 if(beta1 != 0){
-  matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP6, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10)
+  if(beta2 != 0){
+    #The setting is: b1 different to 0 and b2 different to 0 (MAMP-E model). 
+    matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP6, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10, matrixA_MAMP11)
+  }else{
+    #The setting is: b1 different to 0 and b2 equal to 0 (MAMP model). 
+    matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP6, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10)  
+  }
   
-}else{#Particular case!
-  matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10)
+  
+}else{#Particular cases!
+  if(beta2 != 0){
+    #The setting is: b1 equal to 0 and b2 different to 0 (MAMP-E model without fragmentation of units). 
+    matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10, matrixA_MAMP11)
+  }else{
+    #The setting is: b1 equal to 0 and b2 equal to 0 (MAMP model without fragmentation of units). 
+    matrixA_Final = rbind(matrixA_MAMP2, matrixA_MAMP3, matrixA_MAMP4, matrixA_MAMP7, matrixA_MAMP8, matrixA_MAMP9, matrixA_MAMP10)
+  }
 }
 
 #View(matrixA_Final)
 object.size(matrixA_Final)/(1024*1024)
+
+
+
+
+
 #------------------------------------------------------------------------------------------
 #----------------- Vector b - Parameters associated with all restrictions -----------------
 #-------------------------------- (RHS, right-hand side) ----------------------------------
@@ -688,9 +851,10 @@ vectorb_MAMP7  = vector(mode = "numeric", length = sizeRHS_MAMP7)
 vectorb_MAMP8  = rep(1, sizeRHS_MAMP8)
 vectorb_MAMP9  = vector(mode = "numeric", length = sizeRHS_MAMP9)
 vectorb_MAMP10 = vector(mode = "numeric", length = sizeRHS_MAMP10)
+vectorb_MAMP11 = rep(c(0,0,-1), numberVariablesP)
 
 #Transform the vector into a "sparse" type
-vectorb_Final = c(vectorb_MAMP2, vectorb_MAMP3, vectorb_MAMP4, vectorb_MAMP6, vectorb_MAMP7, vectorb_MAMP8, vectorb_MAMP9, vectorb_MAMP10)
+vectorb_Final = c(vectorb_MAMP2, vectorb_MAMP3, vectorb_MAMP4, vectorb_MAMP6, vectorb_MAMP7, vectorb_MAMP8, vectorb_MAMP9, vectorb_MAMP10, vectorb_MAMP11)
 vectorb_Final = as(object = vectorb_Final, Class = "sparseVector")
 #------------------------------------------------------------------------------------------
 #------------------------ Others inputs parameters for the solver -------------------------
@@ -704,8 +868,9 @@ vectorSense_MAMP7  = rep("<=", sizeRHS_MAMP7)  #NEW!
 vectorSense_MAMP8  = rep("==", sizeRHS_MAMP8)  #NEW!
 vectorSense_MAMP9  = rep("==", sizeRHS_MAMP9)  #NEW!
 vectorSense_MAMP10 = rep("==", sizeRHS_MAMP10) #NEW!
+vectorSense_MAMP11 = rep( c("<=","<=",">="), numberVariablesP) #NEW!
 
-vectorSense_Final  = c(vectorSense_MAMP2, vectorSense_MAMP3, vectorSense_MAMP4, vectorSense_MAMP6, vectorSense_MAMP7, vectorSense_MAMP8, vectorSense_MAMP9, vectorSense_MAMP10)
+vectorSense_Final  = c(vectorSense_MAMP2, vectorSense_MAMP3, vectorSense_MAMP4, vectorSense_MAMP6, vectorSense_MAMP7, vectorSense_MAMP8, vectorSense_MAMP9, vectorSense_MAMP10, vectorSense_MAMP11)
 
 # CAMBIAR!
 vectorBounds <- list(lower = list(ind = seq(1:numberVariables), val = rep(0,numberVariables)),
@@ -719,14 +884,14 @@ vectorVarType_Z      = rep("B", numberVariablesZ)
 vectorVarType_B      = rep("C", numberVariablesB) 
 vectorVarType_Lambda = rep("C", numberVariablesLambda) 
 vectorVarType_V      = rep("B", numberVariablesV) 
+vectorVarType_P      = rep("B", numberVariablesP)
 
-vectorVarType_Final  = c( vectorVarType_W, vectorVarType_Y, vectorVarType_X, vectorVarType_Z, vectorVarType_B, vectorVarType_Lambda, vectorVarType_V)
+vectorVarType_Final  = c( vectorVarType_W, vectorVarType_Y, vectorVarType_X, vectorVarType_Z, vectorVarType_B, vectorVarType_Lambda, vectorVarType_V, vectorVarType_P)
  
 preprocessingTime_2 = Sys.time() ; preprocessingTime = preprocessingTime_2 - preprocessingTime_1
 
-
 #------------------------------------------------------------------------------------------
-#------------------------------- Solvers (Rsymphony - GLPK) -------------------------------
+#-------------------------- Solvers (GUROBI - Rsymphony - GLPK) ---------------------------
 #------------------------------------------------------------------------------------------
 processingTime_1 = Sys.time()
 
@@ -741,25 +906,43 @@ max      <- FALSE               #max <- TRUE means F.O = maximize / max <- FALSE
 write_lp <- TRUE                #Optional!
 write_lp <- TRUE                #Optional!
 
+#------------------------------------------------------------------------------------------
+#-------------------------------------- Gurobi Solver! ------------------------------------
+#------------------------------------------------------------------------------------------
+modelGurobi            = list()
+modelGurobi$obj        = as(object = obj, Class = "vector")
+modelGurobi$modelsense = "min"
+modelGurobi$rhs        = as(object = rhs, Class = "vector")
+modelGurobi$sense      = replace(dir,dir == "==","=")
+modelGurobi$vtype      = types
+modelGurobi$A          = mat
+
+modelSolver_Gurobi <- gurobi::gurobi(modelGurobi, list()) 
+print(modelSolver_Gurobi)
 
 
-#Rsymphony Solver!
-modelSolver_Rsymphony <- Rsymphony::Rsymphony_solve_LP(obj, mat, dir, rhs, bounds = bounds, 
-                                             types = types, max=max, verbosity = -2, write_lp = write_lp, write_mps = write_lp)
-
-print(modelSolver_Rsymphony)
-
+sink(nameInstanceRun)
 processingTime_2 = Sys.time() ; processingTime = processingTime_2 - processingTime_1
-print(paste("Preprocessing Time (matrix construction) = ", round(preprocessingTime, 2), "seg.") )
-print(paste("Processing Time (solver execution) = ", round(processingTime, 2), "seg.") )
-
-
-# #GLPK Solver!
+cat(" Instance size = ", numberUnits, "units, ", numberSpecies, "species, ", numberThreats, "threats.\n")+
+cat(" Instance run parameters = ", "b1:", beta1, ", b2:", beta2,", Exponent:", exponent, ", Breakpoints:",numberBreakpoints, "\n") +
+cat(" Model name = MAMP-E\n")+
+cat(" Number of variables = ", numberVariables, "\n", "Matrix A dimensions = ", nrow(matrixA_Final),"rows *", ncol(matrixA_Final), "columns.\n","Preprocessing Time (matrix construction) = ", round(preprocessingTime, 2), "seg.\n","Processing Time (solver execution) = ", round(modelSolver_Gurobi$runtime, 2), "seg.\n") + 
+cat(" Status reported by the solver = ", modelSolver_Gurobi$status, "\n", "Objective value = ", modelSolver_Gurobi$objval, "\n", "GAP = ", as(object = modelSolver_Gurobi$mipgap, Class = "numeric"), "\n") +
+cat(" Decision variables = \n", vectorVariables, "\n") + 
+cat(" Optimal solution = \n", modelSolver_Gurobi$x)  
+sink()
+# #------------------------------------------------------------------------------------------
+# #------------------------------------ Rsymphony Solver! -----------------------------------
+# #------------------------------------------------------------------------------------------
+# modelSolver_Rsymphony <- Rsymphony::Rsymphony_solve_LP(obj, mat, dir, rhs, bounds = bounds, 
+#                                              types = types, max=max, verbosity = -2, write_lp = write_lp, write_mps = write_lp)
+# 
+# print(modelSolver_Rsymphony)
+# 
+# #------------------------------------------------------------------------------------------
+# #--------------------------------------- GLPK Solver! -------------------------------------
+# #------------------------------------------------------------------------------------------
 # modelSolver_GLPK <- Rglpk::Rglpk_solve_LP(obj, mat, dir, rhs, bounds = bounds,
 #                                           types = types, max=max)
 # print(modelSolver_GLPK)
 # 
-
-
-
-

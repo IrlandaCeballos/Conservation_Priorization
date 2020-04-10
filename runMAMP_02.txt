@@ -1,0 +1,10 @@
+ Instance size =  240 units,  10 species,  4 threats.
+ Instance run parameters =  b1: 0 , b2: 1 , Exponent: 3 , Breakpoints: 4 
+ Model name = MAMP-E
+ Number of variables =  10530 
+ Matrix A dimensions =  14374 rows * 10530 columns.
+ Preprocessing Time (matrix construction) =  45.7 seg.
+ Processing Time (solver execution) =  1.26 seg.
+ Status reported by the solver =  OPTIMAL 
+ Objective value =  1665.993 
+ GAP =  0integer(0)

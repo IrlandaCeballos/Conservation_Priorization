@@ -106,7 +106,8 @@ String variableY(int indexI, int indexJ){
   std::string parenthesis_1 = "[";  
   std::string parenthesis_2 = "]";
   std::string comma         = ",";
-  std::string varY          = "Y" + parenthesis_1 + i_NameIndex + index_I + comma + i_NameIndex + index_J + parenthesis_2; 
+  //std::string varY          = "Y" + parenthesis_1 + i_NameIndex + index_I + comma + i_NameIndex + index_J + parenthesis_2; 
+  std::string varY          =  "Y" + parenthesis_1 + index_I + comma + index_J + parenthesis_2; 
   return varY;
 }
 
@@ -180,6 +181,21 @@ String variableV(int indexI, int indexS, int indexM){
   std::string comma         = ",";
   std::string varV          = "V" + parenthesis_1 + index_I + comma + index_S + comma + index_M + parenthesis_2;
   return varV;
+}
+
+/*
+ * Function sets the name of a variable "P" with is respective sub-index "i1", "i2" and "k" (i.e, "P[i1,i2,k]").
+ */
+// [[Rcpp::export(name = "variableP")]]
+String variableP(int indexI1, int indexI2, int indexK){
+  std::string index_I1      = std::to_string(indexI1);
+  std::string index_I2      = std::to_string(indexI2);
+  std::string index_K       = std::to_string(indexK);
+  std::string parenthesis_1 = "[";
+  std::string parenthesis_2 = "]";
+  std::string comma         = ",";
+  std::string varP          = "P" + parenthesis_1 + index_I1 + comma + index_I2 + comma + index_K + parenthesis_2;
+  return varP;
 }
 
 

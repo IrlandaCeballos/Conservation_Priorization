@@ -19,7 +19,7 @@ void MAMPData::print(){
   //std::cout << "Hello world!" << std::endl;  
 }
 
-//METHOD: It gives you an 'INT Number' from: parameter B.
+//METHOD: It gives you an 'INT Number' from: parameter "beta1".
 double MAMPData::getBeta1(){
   //'beta1' is a boundary length modiﬁer: it can be varied for more or less connected reserve systems. 
   //'beta1' = 1 by default!
@@ -322,6 +322,15 @@ NumericVector MAMPData::get_slope(){
   return slope;
 }
 
+
+//METHOD: It gives you an 'INT Number' from: parameter 'beta2'.
+double MAMPData::getBeta2(){
+  //'beta2' is a penalty factor associated to the spatial fragmentation of actions, which has the same goal than "beta1" in MAMP model.
+  //'beta2' = 1 by default!
+  return beta2;
+}
+
+
 //RCPP 'EXPOSURE BLOCK'.
 RCPP_MODULE(MAMPDatamodule){
   Rcpp::class_<MAMPData>( "MAMPData" )
@@ -359,6 +368,7 @@ RCPP_MODULE(MAMPDatamodule){
   .method( "get_bp",         &MAMPData::get_bp,         "documentation for get_bp") 
   .method( "get_bp3",        &MAMPData::get_bp3,        "documentation for get_bp3") 
   .method( "get_slope",      &MAMPData::get_slope,      "documentation for get_slope")   
+  .method( "getBeta2",       &MAMPData::getBeta2,       "documentation for getBeta2") 
   
   ; //ATENTION! With ";" 
 }
