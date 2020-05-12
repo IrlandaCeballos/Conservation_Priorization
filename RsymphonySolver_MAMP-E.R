@@ -1,94 +1,96 @@
-# Activación de paquetes - Importación de Clases/Functiones de C++ (Rcpp)
+# Activation of libraries and import of C++ classes and functions from Rcpp.
 #------------------------------------------------------------------------------------------
 sys.source(file = "Package_RLibraries.R") 
 setwd("C:/Users/Irlanda Ceballos/Documents/GitHub/Conservation_Priorization")
-sourceCpp(file = "src/RcppClass_MAMPData.cpp")
-sourceCpp(file = "src/RcppFunction_GlobalFunctions.cpp")
+Rcpp::sourceCpp(file = "src/RcppClass_MAMPData.cpp")
+Rcpp::sourceCpp(file = "src/RcppFunction_GlobalFunctions.cpp")
 
-nameInstanceRun = "runMAMP-E_15.txt"
+nameInstanceRun     = "runMAMP-E_15.txt"
 preprocessingTime_1 = Sys.time()
 
-#Instalación de GUROBI Solver
-#install.packages("c:/gurobi901/win64/R/gurobi_9.0-1.zip", repos = NULL)
-#install.packages("slam", repos = "https://cloud.r-project.org")
+# Installation of the GUROBI solver.
+#utils::install.packages("c:/gurobi901/win64/R/gurobi_9.0-1.zip", repos = NULL)
+#utils::install.packages("slam", repos = "https://cloud.r-project.org")
 
-# # Lectura de datos (inputs) de MARXAN/MAMP (inputs: 10 units/ 5 species/ 3 threats)
-# #------------------------------------------------------------------------------------------
-# target_Data       <- as.data.frame(read_delim("data/data_ExtremelySmall/target_ExtremelySmall.csv", ";", trim_ws = TRUE)%>%select(1:5))
-# unitCost_Data     <- as.data.frame(read_delim("data/data_ExtremelySmall/unitCost_ExtremelySmall.csv", ";", trim_ws = TRUE))
-# boundary_Data     <- as.data.frame(read_delim("data/data_ExtremelySmall/boundary_ExtremelySmall.csv", ";",
-#                                               trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
-# speciesDistribution_Data <- as.data.frame(read_delim("data/data_ExtremelySmall/speciesDistribution_ExtremelySmall.csv", ";", trim_ws = TRUE))
-# speciesDistribution_Data <- cbind.data.frame(speciesDistribution_Data$pu, speciesDistribution_Data$species, speciesDistribution_Data$amount);
-# colnames(speciesDistribution_Data) <- c("pu","species","amount")
-# 
-# #New data required by the MAMP problem (Threats distribution, species-threats sensibility and action cost)
-# threatsDistribution_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/threatsDistribution_ExtremelySmall.csv",
-#                                                        ";", trim_ws = TRUE, col_types = cols(pu = col_integer(), threats = col_integer(), amount = col_integer() )) )
-# sensibility_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/speciesThreatsSensibility_ExtremelySmall.csv",
-#                                                ";", trim_ws = TRUE, col_types = cols(species = col_integer(), threats = col_integer(), sensibility = col_integer() )) )
-# actionCost_Data <- as.data.frame( read_delim("data/data_ExtremelySmall/actionCost_ExtremelySmall.csv",
-#                                               ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
-
-
-# Lectura de datos (inputs) de MARXAN/MAMP (inputs: 240 units/ 10 species/ 4 threats)
+# Reading input data for MARXAN and/or MAMP models (instance size: 10 units/ 5 species/ 3 threats)
 #------------------------------------------------------------------------------------------
-target_Data       <- as.data.frame(read_delim("data/data_Small/target_Small.csv", ";", trim_ws = TRUE)%>%select(1:5))
-unitCost_Data     <- as.data.frame(read_delim("data/data_Small/unitCost_Small.csv", ";", trim_ws = TRUE))
-boundary_Data     <- as.data.frame(read_delim("data/data_Small/boundary_Small.csv", ";",
-                                             trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
-speciesDistribution_Data <- as.data.frame(read_delim("data/data_Small/speciesDistribution_Small.csv", ";", trim_ws = TRUE))
+target_Data       <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/target_ExtremelySmall.csv", ";", trim_ws = TRUE)%>%dplyr::select(1:5))
+unitCost_Data     <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/unitCost_ExtremelySmall.csv", ";", trim_ws = TRUE))
+boundary_Data     <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/boundary_ExtremelySmall.csv", ";",
+                                              trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  )))
+speciesDistribution_Data <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/speciesDistribution_ExtremelySmall.csv", ";", trim_ws = TRUE))
 speciesDistribution_Data <- cbind.data.frame(speciesDistribution_Data$pu, speciesDistribution_Data$species, speciesDistribution_Data$amount);
 colnames(speciesDistribution_Data) <- c("pu","species","amount")
 
-#New data required by the MAMP problem (Threats distribution, species-threats sensibility and action cost)
-threatsDistribution_Data <- as.data.frame( read_delim("data/data_Small/threatsDistribution_Small.csv",
-                                                      ";", trim_ws = TRUE, col_types = cols(pu = col_integer(), threats = col_integer(), amount = col_integer() )) )
-sensibility_Data <- as.data.frame( read_delim("data/data_Small/speciesThreatsSensibility_Small.csv",
-                                              ";", trim_ws = TRUE, col_types = cols(species = col_integer(), threats = col_integer(), sensibility = col_integer() )) )
-actionCost_Data <- as.data.frame( read_delim("data/data_Small/actionCost_Small.csv",
-                                             ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
+# New data required by the MAMP problem (threats distribution, species-threats sensibility and action cost)
+threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/threatsDistribution_ExtremelySmall.csv",
+                                                       ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
+sensibility_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/speciesThreatsSensibility_ExtremelySmall.csv",
+                                               ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), sensibility = readr::col_integer() )) )
+actionCost_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/actionCost_ExtremelySmall.csv",
+                                              ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
 
 
-# # Lectura de datos (inputs) de MARXAN/MAMP (inputs: 2316 units/ 45 species/ 4 threats)
+# # Reading input data for MARXAN and/or MAMP models (instance size: 240 units/ 10 species/ 4 threats)
 # #------------------------------------------------------------------------------------------
-# target_Data       <- as.data.frame(read_delim("data/data_Big/target_Big.csv", ";", trim_ws = TRUE)%>%select(1:5))
-# unitCost_Data     <- as.data.frame(read_delim("data/data_Big/unitCost_Big.csv", ";", trim_ws = TRUE))
-# boundary_Data     <- as.data.frame(read_delim("data/data_Big/boundary_Big.csv", ";",
-#                                              trim_ws = TRUE, col_types = cols(id1 = col_integer(), id2 = col_integer(), boundary = col_double()  )))
-# speciesDistribution_Data <- as.data.frame(read_delim("data/data_Big/speciesDistribution_Big.csv", ";", trim_ws = TRUE))
+# target_Data       <- as.data.frame(readr::read_delim("data/data_Small/target_Small.csv", ";", trim_ws = TRUE)%>%dplyr::select(1:5))
+# unitCost_Data     <- as.data.frame(readr::read_delim("data/data_Small/unitCost_Small.csv", ";", trim_ws = TRUE))
+# boundary_Data     <- as.data.frame(readr::read_delim("data/data_Small/boundary_Small.csv", ";",
+#                                              trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  )))
+# speciesDistribution_Data <- as.data.frame(readr::read_delim("data/data_Small/speciesDistribution_Small.csv", ";", trim_ws = TRUE))
 # speciesDistribution_Data <- cbind.data.frame(speciesDistribution_Data$pu, speciesDistribution_Data$species, speciesDistribution_Data$amount);
 # colnames(speciesDistribution_Data) <- c("pu","species","amount")
 # 
-# #New data required by the MAMP problem (Threats distribution, species-threats sensibility and action cost)
-# threatsDistribution_Data <- as.data.frame( read_delim("data/data_Big/threatsDistribution_Big.csv",
-#                                                       ";", trim_ws = TRUE, col_types = cols(pu = col_integer(), threats = col_integer(), amount = col_integer() )) )
-# sensibility_Data <- as.data.frame( read_delim("data/data_Big/speciesThreatsSensibility_Big.csv",
-#                                               ";", trim_ws = TRUE, col_types = cols(species = col_integer(), threats = col_integer(), sensibility = col_integer() )) )
-# actionCost_Data <- as.data.frame( read_delim("data/data_Big/actionCost_Big.csv",
+# #New data required by the MAMP problem (threats distribution, species-threats sensibility and action cost)
+# threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_Small/threatsDistribution_Small.csv",
+#                                                       ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
+# sensibility_Data <- as.data.frame( readr::read_delim("data/data_Small/speciesThreatsSensibility_Small.csv",
+#                                               ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), sensibility = readr::col_integer() )) )
+# actionCost_Data <- as.data.frame( readr::read_delim("data/data_Small/actionCost_Small.csv",
+#                                              ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
+
+
+# # Reading input data for MARXAN and/or MAMP models (instance size: 2316 units/ 45 species/ 4 threats)
+# #------------------------------------------------------------------------------------------
+# target_Data       <- as.data.frame(readr::read_delim("data/data_Big/target_Big.csv", ";", trim_ws = TRUE)%>%dplyr::select(1:5))
+# unitCost_Data     <- as.data.frame(readr::read_delim("data/data_Big/unitCost_Big.csv", ";", trim_ws = TRUE))
+# boundary_Data     <- as.data.frame(readr::read_delim("data/data_Big/boundary_Big.csv", ";",
+#                                              trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  )))
+# speciesDistribution_Data <- as.data.frame(readr::read_delim("data/data_Big/speciesDistribution_Big.csv", ";", trim_ws = TRUE))
+# speciesDistribution_Data <- cbind.data.frame(speciesDistribution_Data$pu, speciesDistribution_Data$species, speciesDistribution_Data$amount);
+# colnames(speciesDistribution_Data) <- c("pu","species","amount")
+# 
+# #New data required by the MAMP problem (threats distribution, species-threats sensibility and action cost)
+# threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_Big/threatsDistribution_Big.csv",
+#                                                       ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
+# sensibility_Data <- as.data.frame( readr::read_delim("data/data_Big/speciesThreatsSensibility_Big.csv",
+#                                               ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), sensibility = readr::col_integer() )) )
+# actionCost_Data <- as.data.frame( readr::read_delim("data/data_Big/actionCost_Big.csv",
 #                                              ";", col_names = TRUE, trim_ws = TRUE, col_types = NULL ))
 
 #------------------------------------------------------------------------------------------
-#------------------ # MAMP and MAMP-E, with Rsymphony Solver (from R API) -----------------
+#---------------------- Implementation of the MAMP and MAMP-e models ---------------------- 
 #------------------------------------------------------------------------------------------
 #Observation: "MAMPData" Class was writen in the C++ language.
-problemData = new(MAMPData, target_Data, unitCost_Data, boundary_Data, speciesDistribution_Data, threatsDistribution_Data, sensibility_Data, actionCost_Data)
+problemData = methods::new(MAMPData, target_Data, unitCost_Data, boundary_Data, speciesDistribution_Data, threatsDistribution_Data, sensibility_Data, actionCost_Data)
 
 beta1             = problemData$getBeta1()       #beta1 set in 1 for default!
 beta2             = problemData$getBeta2()       #beta2 set in 1 for default!
 exponent          = problemData$getExponent()    #exponent set in 3 for default!
 numberBreakpoints = problemData$getBreakpoints() #numberBreakpoints set in 4 for default!
-numberSegments    = problemData$getSegments()    #numberBreakpoints = (numberBreakpoints - 1) for default!
-#NEW! Parameters for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
-bp  = problemData$get_bp()  
-bp3 = problemData$get_bp3()  
+numberSegments    = problemData$getSegments()    #numberSegments = (numberBreakpoints - 1) for default!
+
+# NEW! Parameters for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
+bp    = problemData$get_bp()  
+bp3   = problemData$get_bp3()  
 slope = problemData$get_slope()
 
 numberUnits   = problemData$getUnits()
 numberSpecies = problemData$getSpecies()
 numberThreats = problemData$getThreats()
 actionCost    = problemData$getActionCost()
-ts            = problemData$getTarget() #Conservation target of each species!
+ts            = problemData$getTarget()     #Conservation target of each species!
+hola          = problemData$getBoundary()
 
 Si = problemData$getSet("Si") #It corresponds to the set Si (Si belong to set S).
 Ki = problemData$getSet("Ki") #It corresponds to the set Ki (Ki belong to set K).
@@ -105,10 +107,10 @@ matrix_speciesDistribution <- originalMatrix_Distribution(data= speciesDistribut
 matrix_threatsDistribution <- originalMatrix_Distribution(data= threatsDistribution_Data, units= numberUnits, species= numberThreats)
 matrix_c <- createMatrix_c(dataDistribution = matrix_threatsDistribution, dataCost = as.vector(x = unitCost_Data[,2] , mode = "numeric"))
 
-# write.csv(matrix_cv, file="NEW_cv_Matrix.csv", row.names = F)
-# write.csv(matrix_speciesDistribution, file="NEW_speciesDistribution_Matrix.csv", row.names = F)
-# write.csv(matrix_threatsDistribution, file="NEW_threatsDistribution_Matrix.csv", row.names = F)
-# write.csv(matrix_c, file="NEW_actionCost_Matrix.csv", row.names = F)
+# utils::write.csv(matrix_cv, file="NEW_cv_Matrix.csv", row.names = F)
+# utils::write.csv(matrix_speciesDistribution, file="NEW_speciesDistribution_Matrix.csv", row.names = F)
+# utils::write.csv(matrix_threatsDistribution, file="NEW_threatsDistribution_Matrix.csv", row.names = F)
+# utils::write.csv(matrix_c, file="NEW_actionCost_Matrix.csv", row.names = F)
 
 #------------------------------------------------------------------------------------------
 #---------------- Vector C - Coefficients associated with the planning cost ---------------
@@ -130,7 +132,7 @@ for(l in 1:boundarySize){#OJO!:VER COMO OPTIMIZAR ESTA PARTE CUANDO beta1 == 0
     if(index_i1 == i){
       auxCoeff              = connectivityVector[i]
       connectivityVector[i] = auxCoeff + connectivityCoeff
-      #This allows you to specify in a set, the values associated with W[i] that are linked to Y[i1][i2]
+      #This allows you to specify in a set, the values associated with W[i] that are linked to Y[i1,i2]
       #Here, we suppose that the original quadrate matrix cv[i1,i2], is symmetric!
     }
     if(index_i2 == i){
@@ -140,10 +142,10 @@ for(l in 1:boundarySize){#OJO!:VER COMO OPTIMIZAR ESTA PARTE CUANDO beta1 == 0
   }#END internal 'for'
 }#END external 'for'
 
-#Observation: "vectorC_PlanningCost", vector with the associated coefficients of each variable W[i], 
+#Observation: "vectorC_VarW", vector with the associated coefficients of each variable W[i], 
 #(number of positions equivalent to the number of planning units)
-vectorC_UnitCost      <- as.vector( x = unitCost_Data[,2] , mode = "numeric" )
-vectorC_PlanningCost  <- vectorC_UnitCost + connectivityVector
+vectorC_UnitCost  <- as.vector( x = unitCost_Data[,2] , mode = "numeric" )
+vectorC_VarW      <- vectorC_UnitCost + connectivityVector
 
 numberVariablesW = numberUnits
 
@@ -153,7 +155,7 @@ numberVariablesW = numberUnits
 #------------------------------------------------------------------------------------------
 # Observation: vector with the associated coefficients of each variable Y[i1,i2] 
 #(number of positions equivalent to the number of planning units)
-vectorC_ConnectivityCost <- c()
+vectorC_VarY <- c()
 
 #Creation of vectors containing the name of the decision variables (variables W[i] and Y[i1,i2]).
 #Observation: "createVectorVarW()" Function was written in C++ language.
@@ -176,7 +178,7 @@ if(beta1 != 0){
         vectorVariablesY   = c(vectorVariablesY, varY)
         
         connectivityCoeff = -beta1*matrix_cv[i,j]
-        vectorC_ConnectivityCost = c(vectorC_ConnectivityCost, connectivityCoeff)
+        vectorC_VarY = c(vectorC_VarY, connectivityCoeff)
       }
     }
   }
@@ -188,11 +190,11 @@ numberVariablesY = length(vectorVariablesY)
 #----------------- Vector C - Coefficients associated with the action cost ----------------
 #--------------------- (coefficients associated with X[i,k] variables) --------------------
 #------------------------------------------------------------------------------------------
-vectorC_ActionCost = c()
-vectorVariablesX   = c()
-vectorIndexI_Xik   = c()
-vectorIndexK_Xik   = c()
-actionCostCoeff    = 0
+vectorC_VarX     = c()
+vectorVariablesX = c()
+vectorIndexI_Xik = c()
+vectorIndexK_Xik = c()
+actionCostCoeff  = 0
 
 for(i in 1:numberUnits){ 
   for(k in 1:numberThreats){
@@ -204,7 +206,7 @@ for(i in 1:numberUnits){
       vectorIndexK_Xik = c(vectorIndexK_Xik, k)
       
       actionCostCoeff  = matrix_c[k,i]
-      vectorC_ActionCost = c(vectorC_ActionCost, actionCostCoeff)
+      vectorC_VarX = c(vectorC_VarX, actionCostCoeff)
     } 
   }
 }
@@ -223,7 +225,7 @@ for(i in 1:numberUnits){
   subset_Ki <- Ki[[i]] #The subset is a vector of integers following its definition in C ++.
   for(s in subset_Si){
     subset_Ks        <- Ks[[s]] #The subset is a vector of integers following its definition in C ++.
-    subset_Ki_Ks     <- intersect(subset_Ki,subset_Ks)
+    subset_Ki_Ks     <- dplyr::intersect(subset_Ki,subset_Ks)
     intersectionSize <- length(subset_Ki_Ks)
     if(intersectionSize == 0){
       varZ = variableZ(i,s)
@@ -249,11 +251,10 @@ for(s in 1:numberSpecies){
   subset_Ks <- Ks[[s]]
   for(i in subset_Is){
     subset_Ki        <- Ki[[i]]
-    subset_Ki_Ks     <- intersect(subset_Ki,subset_Ks)
+    subset_Ki_Ks     <- dplyr::intersect(subset_Ki,subset_Ks)
     intersectionSize <- length(subset_Ki_Ks)
     
     if(intersectionSize != 0){
-      #print(paste("i = ", i," s = ",s," intersection = ", subset_Ki_Ks) ) ;
       vectorIndex_i_Bis = c(vectorIndex_i_Bis, i)
       vectorIndex_s_Bis = c(vectorIndex_s_Bis, s)
     }#END internal if
@@ -277,7 +278,7 @@ vectorVariablesLambda_Seg = vector(mode = "character", length = numberVariablesB
 
 for(m in 1:numberSegments){
   vectorVariablesLambda_Seg = apply(X = matrixIndex_Bis, MARGIN = 1, FUN = function(x) variableLambda(x[1], x[2], m)) 
-  vectorVariablesLambda = c(vectorVariablesLambda, vectorVariablesLambda_Seg)
+  vectorVariablesLambda     = c(vectorVariablesLambda, vectorVariablesLambda_Seg)
 }
 
 numberVariablesLambda = numberVariablesB*numberSegments
@@ -328,7 +329,7 @@ if(beta2 != 0){
     i2 = matrixIndex_Yi1i12[l,2]  
     subset_Ki1       = Ki[[i1]]
     subset_Ki2       = Ki[[i2]]
-    subset_Ki1_Ki2   = intersect(subset_Ki1,subset_Ki2)
+    subset_Ki1_Ki2   = dplyr::intersect(subset_Ki1,subset_Ki2)
     intersectionSize = length(subset_Ki1_Ki2)
     
     if(intersectionSize != 0){
@@ -358,12 +359,10 @@ if(beta2 != 0){
     k        = matrixIndex_Pi1i12k[l,3]
     varX_i1k   = variableX(i1, k)
     coeff_Xi1k = beta2*matrix_cv[i1,i2]
+    posX_Xi1k  = match(varX_i1k, vectorVariablesX) 
     
-    posX_Xi1k = match(varX_i1k, vectorVariablesX) 
-    #print(paste("posición Xi1,k ->", posX_Xi1k))
-    
-    auxCoeff  = vectorC_ActionCost[posX_Xi1k] 
-    vectorC_ActionCost[posX_Xi1k] = auxCoeff + coeff_Xi1k
+    auxCoeff  = vectorC_VarX[posX_Xi1k] 
+    vectorC_VarX[posX_Xi1k] = auxCoeff + coeff_Xi1k
     
   }#END external for
   
@@ -373,10 +372,10 @@ if(beta2 != 0){
   vectorC_auxVarP  = vector(mode = "numeric"  , length = numberVariablesP) 
 }
 
-#View(matrixIndex_Pi1i12k)
-#View(vectorVariablesP)
-#View(vectorC_auxVarP)
-#View(vectorC_ActionCost)
+#utils::View(matrixIndex_Pi1i12k)
+#utils::View(vectorVariablesP)
+#utils::View(vectorC_auxVarP)
+#utils::View(vectorC_VarX)
 
 #------------------------------------------------------------------------------------------
 #-------------------------------------- Vector C - FINAL ----------------------------------
@@ -394,15 +393,15 @@ numberVariables  = numberVariablesW + numberVariablesY + numberVariablesX + numb
                    numberVariablesB + numberVariablesLambda + numberVariablesV + numberVariablesP
 
 vectorVariables = c(vectorVariablesW, vectorVariablesY, vectorVariablesX, vectorVariablesZ, vectorVariablesB, vectorVariablesLambda, vectorVariablesV, vectorVariablesP)
-vectorC_Final   = as.vector(x= c(vectorC_PlanningCost, vectorC_ConnectivityCost, vectorC_ActionCost, vectorC_auxVarZ, vectorC_auxVarB, vectorC_auxVarLambda, vectorC_auxVarV, vectorC_auxVarP), mode = "numeric")	
+vectorC_Final   = as.vector(x= c(vectorC_VarW, vectorC_VarY, vectorC_VarX, vectorC_auxVarZ, vectorC_auxVarB, vectorC_auxVarLambda, vectorC_auxVarV, vectorC_auxVarP), mode = "numeric")	
 
 #Transform the vector into a "sparse" type
-vectorC_Final = as(object = vectorC_Final, Class = "sparseVector")
+vectorC_Final = methods::as(object = vectorC_Final, Class = "sparseVector")
 
 #vectorC_Final_Sparse = Matrix::sparseVector(x = vectorC_Final,i = 1:numberVariables, length = numberVariables)
-#object.size(vectorC_Final)
-#View(vectorVariables)  
-#View(vectorC_Final)  
+#utils::object.size(vectorC_Final)
+#utils::View(vectorVariables)  
+#utils::View(vectorC_Final)  
 
 
 
@@ -412,7 +411,7 @@ vectorC_Final = as(object = vectorC_Final, Class = "sparseVector")
 #------------------------------------------------------------------------------------------
 sizeRHS_MAMP2 = numberSpecies
 #matrixA_MAMP2 <- matrix(data = 0, nrow = sizeRHS_MAMP2, ncol = numberVariables)
-matrixA_MAMP2 <- Matrix(data = 0, nrow = sizeRHS_MAMP2, ncol = numberVariables, sparse = TRUE)
+matrixA_MAMP2 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP2, ncol = numberVariables, sparse = TRUE)
 
 # vectorIndexI_Xik  #Subindex of "i" variable X (I think it's not used! It's not necessary!)
 # vectorIndexK_Xik  #Subindex of "k" variable X 
@@ -445,7 +444,7 @@ for(s in 1:numberSpecies){
   subset_Ks <- Ks[[s]]
   for(i in subset_Is){
     subset_Ki        <- Ki[[i]]
-    subset_Ki_Ks     <- intersect(subset_Ki,subset_Ks)
+    subset_Ki_Ks     <- dplyr::intersect(subset_Ki,subset_Ks)
     intersectionSize <- length(subset_Ki_Ks)
     
     if(intersectionSize != 0){
@@ -476,15 +475,15 @@ for(s in 1:numberSpecies){
 }#END external_2 for (about Species!)
 
 
-#View( vectorVariables[(break_3+1):numberVariables]  )
-#View( matrixA_MAMP2[ , (break_3+1):numberVariables] )
+#utils::View( vectorVariables[(break_3+1):numberVariables]  )
+#utils::View( matrixA_MAMP2[ , (break_3+1):numberVariables] )
 
 #------------------------------------------------------------------------------------------
 #---- Matrix A - Coefficients associated with the variables of the second restriction -----
 #--------------------------------------- (MAMP. 3) ----------------------------------------
 #------------------------------------------------------------------------------------------
 sizeRHS_MAMP3 = numberUnits
-matrixA_MAMP3 <- Matrix(data = 0, nrow = sizeRHS_MAMP3, ncol = numberVariables, sparse = TRUE)
+matrixA_MAMP3 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP3, ncol = numberVariables, sparse = TRUE)
 
 posX_Wi  = 0
 posY_Wi  = 0
@@ -509,7 +508,7 @@ for(i in 1:numberUnits){
   }
 }
 
-#view(matrixA_MAMP3)
+#utils::View(matrixA_MAMP3)
 
 #------------------------------------------------------------------------------------------
 #---- Matrix A - Coefficients associated with the variables of the third restriction ------
@@ -519,7 +518,7 @@ if(numberVariablesZ != 0){
   #auxiliarySet_unitsZis is a set of planning units where there is an associated variable Z[i,s].
   auxSet_unitsZis = unique(vectorIndex_i_Zis) 
   sizeRHS_MAMP4   = length(auxSet_unitsZis)
-  matrixA_MAMP4 <- Matrix(data = 0, nrow = sizeRHS_MAMP4, ncol = numberVariables, sparse = TRUE)
+  matrixA_MAMP4 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP4, ncol = numberVariables, sparse = TRUE)
   
   posX_Wi  = 0
   posY_Wi  = 0
@@ -541,13 +540,11 @@ if(numberVariablesZ != 0){
     }
   }
   
-  
-  #View(matrixA_MAMP4)
+  #utils::View(matrixA_MAMP4)
 }else{
   sizeRHS_MAMP4 = 0
-  matrixA_MAMP4 <- Matrix(data = 0, nrow = sizeRHS_MAMP4, ncol = numberVariables, sparse = TRUE)
+  matrixA_MAMP4 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP4, ncol = numberVariables, sparse = TRUE)
 } 
-
 
 #------------------------------------------------------------------------------------------
 # Matrix A - Coefficients associated the linearisation of the MAMP model objective function 
@@ -556,7 +553,7 @@ if(numberVariablesZ != 0){
 if(beta1 != 0){
   #Linearity constraints for the fragmentation of planning units.
   sizeRHS_MAMP6 = 3*numberVariablesY 
-  matrixA_MAMP6 <- Matrix(data = 0, nrow = sizeRHS_MAMP6, ncol = numberVariables, sparse = TRUE)
+  matrixA_MAMP6 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP6, ncol = numberVariables, sparse = TRUE)
   
   auxNumberUnits = numberUnits + 1
   posX_Yij      = 0 #I used the name "Yij" instead of the original one, "Yi1i2".
@@ -589,11 +586,11 @@ if(beta1 != 0){
     matrixA_MAMP6[ posY_Yij_ct3 , index_i1 ] = -1
     matrixA_MAMP6[ posY_Yij_ct3 , index_i2 ] = -1 
   }
-  #View(matrixA_MAMP6)
+  #utils::View(matrixA_MAMP6)
   
 }else{
   sizeRHS_MAMP6 = 0
-  matrixA_MAMP6 <- Matrix(data = 0, nrow = sizeRHS_MAMP6, ncol = numberVariables, sparse = TRUE)
+  matrixA_MAMP6 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP6, ncol = numberVariables, sparse = TRUE)
 } 
 
 
@@ -603,7 +600,7 @@ if(beta1 != 0){
 #------------------------------------------------------------------------------------------
 sizeRHS_MAMP7 = numberVariablesLambda
 #matrixA_MAMP7 <- matrix(data = 0, nrow = sizeRHS_MAMP7, ncol = numberVariables)
-matrixA_MAMP7 <- Matrix(data = 0, nrow = sizeRHS_MAMP7, ncol = numberVariables, sparse = TRUE)
+matrixA_MAMP7 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP7, ncol = numberVariables, sparse = TRUE)
 
 posX_LAMBDAism = 0
 posY_LAMBDAism = 0
@@ -624,9 +621,9 @@ for(l in 1: numberVariablesLambda){
   matrixA_MAMP7[ posY_LAMBDAism, posX_LAMBDAism ] = coeff_LAMBDAism  
   matrixA_MAMP7[ posY_Vism     , posX_Vism      ] = coeff_Vism  
 }
-# View(matrixA_MAMP7)
-# View( vectorVariables[(break_6+1):numberVariables]  )
-# View( matrixA_MAMP7[ , (break_6+1):numberVariables] )
+# utils::View(matrixA_MAMP7)
+# utils::View( vectorVariables[(break_6+1):numberVariables]  )
+# utils::View( matrixA_MAMP7[ , (break_6+1):numberVariables] )
 
 #------------------------------------------------------------------------------------------
 #- Matrix A - Coefficients associated the linearisation of the MAMP model cubic constraint  
@@ -634,7 +631,7 @@ for(l in 1: numberVariablesLambda){
 #------------------------------------------------------------------------------------------
 sizeRHS_MAMP8 = numberVariablesB
 #matrixA_MAMP8 <- matrix(data = 0, nrow = sizeRHS_MAMP8, ncol = numberVariables)
-matrixA_MAMP8 <- Matrix(data = 0, nrow = sizeRHS_MAMP8, ncol = numberVariables, sparse = TRUE)
+matrixA_MAMP8 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP8, ncol = numberVariables, sparse = TRUE)
 
 posX_Vism  = 0
 posY_Vism  = 0
@@ -648,9 +645,8 @@ for(l in 1:numberVariablesB){
   }
 }
 
-#View( vectorVariables[(break_7+1):numberVariables]  )
-#View( matrixA_MAMP8[ , (break_7+1):numberVariables] )
-
+#utils::View( vectorVariables[(break_7+1):numberVariables] )
+#utils::View( matrixA_MAMP8[ ,(break_7+1):numberVariables] )
 
 #------------------------------------------------------------------------------------------
 #- Matrix A - Coefficients associated the linearisation of the MAMP model cubic constraint  
@@ -658,7 +654,7 @@ for(l in 1:numberVariablesB){
 #------------------------------------------------------------------------------------------
 sizeRHS_MAMP9 = numberVariablesB
 #matrixA_MAMP9 <- matrix(data = 0, nrow = sizeRHS_MAMP9, ncol = numberVariables)
-matrixA_MAMP9 <- Matrix(data = 0, nrow = sizeRHS_MAMP9, ncol = numberVariables, sparse = TRUE)
+matrixA_MAMP9 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP9, ncol = numberVariables, sparse = TRUE)
 
 posX_LAMBDAism  = 0
 posY_LAMBDAism  = 0
@@ -684,7 +680,7 @@ for(l in 1:numberVariablesB){
   
   subset_Ki        = Ki[[i]] #The subset is a vector of integers following its definition in C ++.
   subset_Ks        = Ks[[s]]
-  subset_Ki_Ks     = intersect(subset_Ki,subset_Ks)
+  subset_Ki_Ks     = dplyr::intersect(subset_Ki,subset_Ks)
   intersectionSize = length(subset_Ki_Ks)
   coeff_Xik        = 1/intersectionSize
   
@@ -707,8 +703,8 @@ for(l in 1:numberVariablesB){
   
 }#END external for
 
-# View( vectorVariables[(break_3+1):numberVariables]  )
-# View( matrixA_MAMP9[ , (break_3+1):numberVariables] )
+# utils::View( vectorVariables[(break_3+1):numberVariables]  )
+# utils::View( matrixA_MAMP9[ , (break_3+1):numberVariables] )
 
 #------------------------------------------------------------------------------------------
 #- Matrix A - Coefficients associated the linearisation of the MAMP model cubic constraint  
@@ -716,7 +712,7 @@ for(l in 1:numberVariablesB){
 #------------------------------------------------------------------------------------------
 sizeRHS_MAMP10 = numberVariablesB
 #matrixA_MAMP10  <- matrix(data = 0, nrow = sizeRHS_MAMP10, ncol = numberVariables)
-matrixA_MAMP10 <- Matrix(data = 0, nrow = sizeRHS_MAMP10, ncol = numberVariables, sparse = TRUE)
+matrixA_MAMP10 <- Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP10, ncol = numberVariables, sparse = TRUE)
 
 posX_Bis  = 0
 posY_Bis  = 0
@@ -751,8 +747,8 @@ for(l in 1:numberVariablesB){
   }#END internal for
 }#END external for
 
-# View( vectorVariables[(break_5+1):numberVariables]  )
-# View( matrixA_MAMP10[ , (break_5+1):numberVariables] )
+# utils::View( vectorVariables[(break_5+1):numberVariables]  )
+# utils::View( matrixA_MAMP10[ , (break_5+1):numberVariables] )
 
 
 #------------------------------------------------------------------------------------------
@@ -762,7 +758,7 @@ for(l in 1:numberVariablesB){
 if(beta2 != 0){
   sizeRHS_MAMP11 = 3*numberVariablesP
   #matrixA_MAMP11 = matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables)
-  matrixA_MAMP11 = Matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables, sparse = TRUE)
+  matrixA_MAMP11 = Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables, sparse = TRUE)
 
   posX_Pi1i2k     = 0
   posY_Pi1i2k_ct1 = 0
@@ -803,10 +799,10 @@ if(beta2 != 0){
   }#END for
 }else{
   sizeRHS_MAMP11 = 0
-  matrixA_MAMP11 = Matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables, sparse = TRUE)
+  matrixA_MAMP11 = Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP11, ncol = numberVariables, sparse = TRUE)
 }#END if-else
 
-#View( matrixA_MAMP11[ , (break_3+1):numberVariables] )
+#utils::View( matrixA_MAMP11[ , (break_3+1):numberVariables] )
 
 #------------------------------------------------------------------------------------------
 if(beta1 != 0){
@@ -829,12 +825,8 @@ if(beta1 != 0){
   }
 }
 
-#View(matrixA_Final)
-object.size(matrixA_Final)/(1024*1024)
-
-
-
-
+#utils::View(matrixA_Final)
+utils::object.size(matrixA_Final)/(1024*1024)
 
 #------------------------------------------------------------------------------------------
 #----------------- Vector b - Parameters associated with all restrictions -----------------
@@ -855,11 +847,12 @@ vectorb_MAMP11 = rep(c(0,0,-1), numberVariablesP)
 
 #Transform the vector into a "sparse" type
 vectorb_Final = c(vectorb_MAMP2, vectorb_MAMP3, vectorb_MAMP4, vectorb_MAMP6, vectorb_MAMP7, vectorb_MAMP8, vectorb_MAMP9, vectorb_MAMP10, vectorb_MAMP11)
-vectorb_Final = as(object = vectorb_Final, Class = "sparseVector")
+vectorb_Final = methods::as(object = vectorb_Final, Class = "sparseVector")
 #------------------------------------------------------------------------------------------
 #------------------------ Others inputs parameters for the solver -------------------------
 #------------ (Vector of sense, Vector of bounds, and Vector of variables type ) ----------
 #------------------------------------------------------------------------------------------
+# Right-hand-side (RHS) of the restrictions.
 vectorSense_MAMP2  = rep(">=", sizeRHS_MAMP2)
 vectorSense_MAMP3  = rep("<=", sizeRHS_MAMP3)
 vectorSense_MAMP4  = rep("<=", sizeRHS_MAMP4)
@@ -872,10 +865,31 @@ vectorSense_MAMP11 = rep( c("<=","<=",">="), numberVariablesP) #NEW!
 
 vectorSense_Final  = c(vectorSense_MAMP2, vectorSense_MAMP3, vectorSense_MAMP4, vectorSense_MAMP6, vectorSense_MAMP7, vectorSense_MAMP8, vectorSense_MAMP9, vectorSense_MAMP10, vectorSense_MAMP11)
 
-# CAMBIAR!
-vectorBounds <- list(lower = list(ind = seq(1:numberVariables), val = rep(0,numberVariables)),
-                     upper = list(ind = seq(1:numberVariables), val = rep(1,numberVariables)))
+#Bounds of the variables.
+lowerBound_W      = rep(0, numberVariablesW) 
+lowerBound_Y      = rep(0, numberVariablesY) 
+lowerBound_X      = rep(0, numberVariablesX) 
+lowerBound_Z      = rep(0, numberVariablesZ) 
+lowerBound_B      = rep(0, numberVariablesB) 
+lowerBound_Lambda = rep(0, numberVariablesLambda) 
+lowerBound_V      = rep(0, numberVariablesV) 
+lowerBound_P      = rep(0, numberVariablesP) 
+lowerBounds       = c(lowerBound_W, lowerBound_Y, lowerBound_X, lowerBound_Z, lowerBound_B, lowerBound_Lambda, lowerBound_V, lowerBound_P)
 
+upperBound_W      = rep(1, numberVariablesW) 
+upperBound_Y      = rep(1, numberVariablesY) 
+upperBound_X      = rep(1, numberVariablesX) 
+upperBound_Z      = rep(1, numberVariablesZ) 
+upperBound_B      = rep(1, numberVariablesB) 
+upperBound_Lambda = rep(1, numberVariablesLambda) 
+upperBound_V      = rep(1, numberVariablesV) 
+upperBound_P      = rep(1, numberVariablesP) 
+upperBounds       = c(upperBound_W, upperBound_Y, upperBound_X, upperBound_Z, upperBound_B, upperBound_Lambda, upperBound_V, upperBound_P)
+
+vectorBounds_Final <- list(lower = list(ind = seq(1:numberVariables), val = lowerBounds ),
+                           upper = list(ind = seq(1:numberVariables), val = upperBounds ))
+
+#Type of the variables.
 #"C", "I", and "B" corresponding to continuous, integer, and binary, respectively, or NULL (default), taken as all-continuous.
 vectorVarType_W      = rep("B", numberVariablesW) 
 vectorVarType_Y      = rep("B", numberVariablesY) 
@@ -900,7 +914,7 @@ obj      <- vectorC_Final
 mat      <- matrixA_Final
 dir      <- vectorSense_Final
 rhs      <- vectorb_Final
-bounds   <- vectorBounds
+bounds   <- vectorBounds_Final
 types    <- vectorVarType_Final #"C", "I",and "B" corresponding to continuous, integer, and binary variables.
 max      <- FALSE               #max <- TRUE means F.O = maximize / max <- FALSE means F.O = minimize
 write_lp <- TRUE                #Optional!
@@ -910,9 +924,9 @@ write_lp <- TRUE                #Optional!
 #-------------------------------------- Gurobi Solver! ------------------------------------
 #------------------------------------------------------------------------------------------
 modelGurobi            = list()
-modelGurobi$obj        = as(object = obj, Class = "vector")
+modelGurobi$obj        = methods::as(object = obj, Class = "vector")
 modelGurobi$modelsense = "min"
-modelGurobi$rhs        = as(object = rhs, Class = "vector")
+modelGurobi$rhs        = methods::as(object = rhs, Class = "vector")
 modelGurobi$sense      = replace(dir,dir == "==","=")
 modelGurobi$vtype      = types
 modelGurobi$A          = mat
@@ -927,7 +941,7 @@ cat(" Instance size = ", numberUnits, "units, ", numberSpecies, "species, ", num
 cat(" Instance run parameters = ", "b1:", beta1, ", b2:", beta2,", Exponent:", exponent, ", Breakpoints:",numberBreakpoints, "\n") +
 cat(" Model name = MAMP-E\n")+
 cat(" Number of variables = ", numberVariables, "\n", "Matrix A dimensions = ", nrow(matrixA_Final),"rows *", ncol(matrixA_Final), "columns.\n","Preprocessing Time (matrix construction) = ", round(preprocessingTime, 2), "seg.\n","Processing Time (solver execution) = ", round(modelSolver_Gurobi$runtime, 2), "seg.\n") + 
-cat(" Status reported by the solver = ", modelSolver_Gurobi$status, "\n", "Objective value = ", modelSolver_Gurobi$objval, "\n", "GAP = ", as(object = modelSolver_Gurobi$mipgap, Class = "numeric"), "\n") +
+cat(" Status reported by the solver = ", modelSolver_Gurobi$status, "\n", "Objective value = ", modelSolver_Gurobi$objval, "\n", "GAP = ", methods::as(object = modelSolver_Gurobi$mipgap, Class = "numeric"), "\n") +
 cat(" Decision variables = \n", vectorVariables, "\n") + 
 cat(" Optimal solution = \n", modelSolver_Gurobi$x)  
 sink()
