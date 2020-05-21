@@ -12,7 +12,7 @@
 class MAMPData{
 public:
   //MAMPData();
-  MAMPData(DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, DataFrame); //Constructor
+  MAMPData(DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, List); //Constructor
   DataFrame data01; //Equivalent to target_Data
   DataFrame data02; //Equivalent to unitCost_Data
   DataFrame data03; //Equivalent to boundary_Data
@@ -20,7 +20,7 @@ public:
   //New input data for the MAMP problem
   DataFrame data05; //Equivalent to threatsDistribution_Data
   DataFrame data06; //Equivalent to sensibility_Data
-  DataFrame data07; //Equivalent to actionCost_Data
+  List data07;      //Equivalent to settings_Data 
 
   
   void print();
@@ -46,18 +46,21 @@ public:
   NumericVector get_slope();
   //New methods for the MAMP-E model
   double getBeta2();
+  //New methods for "status column" (in "unitCost_Data" and "threatsDistribution_Data")
+  List get_UnitStatus();
+
   
 private:
   int units    = getUnits();
   int species  = getSpecies();
   int threats  = getThreats();
-  double beta1 = 1.0;
+  double beta1 = getBeta1();
   //New input data for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
-  double exponent = 1.5;  //Equivalent to exponent
-  int breakpoints = 10;    //Equivalent to numberBreakpoints
-  int segments    = getSegments(); //NEW! Equivalent to numberSegments
+  double exponent = getExponent();    //Equivalent to exponent
+  int breakpoints = getBreakpoints(); //Equivalent to numberBreakpoints
+  int segments    = getSegments();    //NEW! Equivalent to numberSegments
   //New input data for the MAMP-E model
-  double beta2    = 1.0;
+  double beta2    = getBeta2();
     
 };
 

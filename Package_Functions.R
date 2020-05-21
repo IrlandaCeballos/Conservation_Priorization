@@ -44,7 +44,8 @@ colnames(dataDistribution) <- c("pu","species","amount")
 # save(dataBoundary, file = "data/dataBoundary.rda")
 # save(dataBoundary, file = "data/dataDistribution.rda")
 # 
-# Load(file = "data/dataTarget.rda")
+
+Load(file = "data/dataTarget.rda")
 # Load(file = "data/dataCost.rda")
 # Load(file = "data/dataBoundary.rda")
 # Load(file = "data/dataDistribution.rda")

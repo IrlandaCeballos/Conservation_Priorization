@@ -1,6 +1,6 @@
-id;target;type;name;spf
-1;5;0;scl_ja;10
-2;2;0;nem_er;10
-3;4;0;thr_sc;10
-4;2;0;neo_be;10
-5;1;0;neo_gr;10
+id;target;name
+1;5;scl_ja
+2;2;nem_er
+3;4;thr_sc
+4;2;neo_be
+5;1;neo_gr

@@ -10,19 +10,18 @@
 //CONSTRUCTORS.
 //MAMPData::MAMPData() :x(0), y(0) { } //To set a default constructor!
 //(NOTE: it's advisable to change the name of data01 -> _data01)
-MAMPData::MAMPData(DataFrame _data01, DataFrame _data02, DataFrame _data03, DataFrame _data04, DataFrame _data05, DataFrame _data06, DataFrame _data07 ) : data01(_data01), data02(_data02), data03(_data03), data04(_data04), data05(_data05), data06(_data06), data07(_data07) { }
+MAMPData::MAMPData(DataFrame _data01, DataFrame _data02, DataFrame _data03, DataFrame _data04, DataFrame _data05, DataFrame _data06, List _data07) : data01(_data01), data02(_data02), data03(_data03), data04(_data04), data05(_data05), data06(_data06), data07(_data07) { }
 
 //METHOD: It gives you the message "Hello world!"
 void MAMPData::print(){
   Rcpp::Rcout << "Hello world!" << std::endl; //You can use only this: "Rcout".    
   //printf("Hello world!\n");
-  //std::cout << "Hello world!" << std::endl;  
 }
 
 //METHOD: It gives you an 'INT Number' from: parameter "beta1".
 double MAMPData::getBeta1(){
   //'beta1' is a boundary length modiﬁer: it can be varied for more or less connected reserve systems. 
-  //'beta1' = 1 by default!
+  double beta1 = data07(0); //'beta1' = 1 by default!
   return beta1;
 }
 
@@ -82,10 +81,10 @@ std::map<int, double> MAMPData::getUnitCost(){
 std::map<int,std::map<int,int>> MAMPData::getActionCost(){
   std::map<int,std::map<int,int>> actionCostData; //It stores the cost of applying an action to eliminate a threat k in planning unit i.
   
-  IntegerVector vectorAux05 = data07[0]; //To identify the planning units.
-  IntegerVector vectorAux06 = data07[1]; //To identify the threats.
-  IntegerVector vectorAux07 = data07[2]; //To identify the action cost.
-  int dataSize = data07.nrows();
+  IntegerVector vectorAux05 = data05[0]; //To identify the planning units.
+  IntegerVector vectorAux06 = data05[1]; //To identify the threats.
+  IntegerVector vectorAux07 = data05[3]; //To identify the action cost.
+  int dataSize = data05.nrows();
   int iAux     = 0;
   int jAux     = 0;
   int kAux     = 0;
@@ -264,11 +263,13 @@ List MAMPData::getSet(String setName){
 //New methods for linearization of the measure of the "local benefit of the species" (constraint MAMP.2)
 //METHOD:
 double MAMPData::getExponent(){
+  double exponent = data07(2);
   return exponent;
 }
 
 //METHOD:
 int MAMPData::getBreakpoints(){
+  int breakpoints = data07(3);
   return breakpoints;
 }
 
@@ -326,8 +327,38 @@ NumericVector MAMPData::get_slope(){
 //METHOD: It gives you an 'INT Number' from: parameter 'beta2'.
 double MAMPData::getBeta2(){
   //'beta2' is a penalty factor associated to the spatial fragmentation of actions, which has the same goal than "beta1" in MAMP model.
-  //'beta2' = 1 by default!
+  double beta2 = data07(1); //'beta2' = 1 by default!
   return beta2;
+}
+
+
+//METHOD: 
+List MAMPData::get_UnitStatus(){
+  IntegerVector unitsUnrestricted; //Unrestricted planning units.
+  IntegerVector unitsLockedIn;     //Pre-included planning units.
+  IntegerVector unitsLockedOut;    //Pre-excluded planning units.
+  IntegerVector vectorAux01 = data02[0]; //To identify the planning unit i.
+  IntegerVector vectorAux02 = data02[2]; //To identify the "status" of planning unit i.
+  int dataSize = data02.nrows();
+  
+  for(int r = 0; r < dataSize; r++){  
+    int filterCondition = vectorAux02[r];
+    if(filterCondition == 0){
+      int unitIndex = vectorAux01[r];
+      unitsUnrestricted.push_back(unitIndex);
+    }
+    if(filterCondition == 2){ //If the unit status equals 2, it means the unit is "locked-in"
+      int unitIndex = vectorAux01[r];
+      unitsLockedIn.push_back(unitIndex);
+    }
+    if(filterCondition == 3){ //If the unit status equals 3, it means the unit is "locked-out"
+      int unitIndex = vectorAux01[r];
+      unitsLockedOut.push_back(unitIndex);
+    }
+  }
+  
+  List unitStatus = List::create(Named("Unrestricted") = Rcpp::sort_unique(unitsUnrestricted), _["LockedIn"] = Rcpp::sort_unique(unitsLockedIn),_["LockedOut"] = Rcpp::sort_unique(unitsLockedOut));
+  return unitStatus;
 }
 
 
@@ -335,7 +366,7 @@ double MAMPData::getBeta2(){
 RCPP_MODULE(MAMPDatamodule){
   Rcpp::class_<MAMPData>( "MAMPData" )
   //.constructor("documentation for default constructor")
-  .constructor<DataFrame,DataFrame,DataFrame,DataFrame,DataFrame,DataFrame,DataFrame>("documentation for constructor")
+  .constructor<DataFrame,DataFrame,DataFrame,DataFrame,DataFrame,DataFrame,List>("documentation for constructor")
   .field( "data01", &MAMPData::data01, "documentation for data01")
   .field( "data02", &MAMPData::data02, "documentation for data02")
   .field( "data03", &MAMPData::data03, "documentation for data03")
@@ -369,7 +400,9 @@ RCPP_MODULE(MAMPDatamodule){
   .method( "get_bp3",        &MAMPData::get_bp3,        "documentation for get_bp3") 
   .method( "get_slope",      &MAMPData::get_slope,      "documentation for get_slope")   
   .method( "getBeta2",       &MAMPData::getBeta2,       "documentation for getBeta2") 
-  
+  //New methods for "status column" (in "unitCost_Data" and "threatsDistribution_Data") 
+  .method( "get_UnitStatus", &MAMPData::get_UnitStatus, "documentation for get_UnitStatus")
+
   ; //ATENTION! With ";" 
 }
 
