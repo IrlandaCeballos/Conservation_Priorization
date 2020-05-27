@@ -2,13 +2,13 @@
  Instance run parameters =  b1: 1 , b2: 1 , Exponent: 3 , Breakpoints: 4 
  Model name = MAMP-E
  Number of variables =  169 
- Matrix A dimensions =  249 rows * 169 columns.
- Preprocessing Time (matrix construction) =  8.47 seg.
- Processing Time (solver execution) =  0.02 seg.
+ Matrix A dimensions =  253 rows * 169 columns.
+ Preprocessing Time (matrix construction) =  9.96 seg.
+ Processing Time (solver execution) =  0 seg.
  Status reported by the solver =  OPTIMAL 
- Objective value =  45.14626 
+ Objective value =  48.72361 
  GAP =  0 
  Decision variables = 
  W[1] W[2] W[3] W[4] W[5] W[6] W[7] W[8] W[9] W[10] Y[1,3] Y[1,4] Y[1,6] Y[1,7] Y[1,10] Y[2,3] Y[2,5] Y[2,6] Y[3,1] Y[3,2] Y[3,5] Y[3,7] Y[4,1] Y[4,5] Y[4,6] Y[5,2] Y[5,3] Y[5,4] Y[5,6] Y[6,1] Y[6,2] Y[6,4] Y[6,5] Y[7,1] Y[7,3] Y[8,9] Y[9,8] Y[9,10] Y[10,1] Y[10,9] X[1,1] X[1,3] X[2,1] X[3,2] X[3,3] X[4,1] X[4,3] X[5,2] X[6,2] X[6,3] X[7,1] X[8,1] X[8,3] X[9,2] X[10,2] X[10,3] Z[2,2] Z[2,3] Z[2,5] Z[3,1] Z[5,1] Z[5,3] Z[6,1] Z[7,3] Z[8,2] B[1,1] B[2,1] B[2,4] B[3,3] B[4,1] B[6,3] B[7,1] B[8,1] B[8,3] B[8,4] B[9,5] B[10,4] Lambda[1,1,1] Lambda[2,1,1] Lambda[2,4,1] Lambda[3,3,1] Lambda[4,1,1] Lambda[6,3,1] Lambda[7,1,1] Lambda[8,1,1] Lambda[8,3,1] Lambda[8,4,1] Lambda[9,5,1] Lambda[10,4,1] Lambda[1,1,2] Lambda[2,1,2] Lambda[2,4,2] Lambda[3,3,2] Lambda[4,1,2] Lambda[6,3,2] Lambda[7,1,2] Lambda[8,1,2] Lambda[8,3,2] Lambda[8,4,2] Lambda[9,5,2] Lambda[10,4,2] Lambda[1,1,3] Lambda[2,1,3] Lambda[2,4,3] Lambda[3,3,3] Lambda[4,1,3] Lambda[6,3,3] Lambda[7,1,3] Lambda[8,1,3] Lambda[8,3,3] Lambda[8,4,3] Lambda[9,5,3] Lambda[10,4,3] V[1,1,1] V[2,1,1] V[2,4,1] V[3,3,1] V[4,1,1] V[6,3,1] V[7,1,1] V[8,1,1] V[8,3,1] V[8,4,1] V[9,5,1] V[10,4,1] V[1,1,2] V[2,1,2] V[2,4,2] V[3,3,2] V[4,1,2] V[6,3,2] V[7,1,2] V[8,1,2] V[8,3,2] V[8,4,2] V[9,5,2] V[10,4,2] V[1,1,3] V[2,1,3] V[2,4,3] V[3,3,3] V[4,1,3] V[6,3,3] V[7,1,3] V[8,1,3] V[8,3,3] V[8,4,3] V[9,5,3] V[10,4,3] P[1,3,3] P[1,4,1] P[1,4,3] P[1,6,3] P[1,7,1] P[1,10,3] P[3,1,3] P[3,5,2] P[4,1,1] P[4,1,3] P[4,6,3] P[5,3,2] P[5,6,2] P[6,1,3] P[6,4,3] P[6,5,2] P[7,1,1] P[9,10,2] P[10,1,3] P[10,9,2] 
  Optimal solution = 
- 1 1 1 0 0 0 1 1 1 0 1 0 0 1 0 1 0 0 1 1 0 1 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 1 1 1 0 0 0 1 1 1 1 0 0 0 1 1 1 1 1 1 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 1 1 1 1 0 0 0 0 0 0 1 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 1 1 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0integer(0)
+ 1 1 1 0 0 0 1 1 1 0 1 0 0 1 0 1 0 0 1 1 0 1 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 0 1 0 1 1 1 0 0 0 0 0 1 1 1 0 0 0 1 1 1 1 0 0 0 1 1 1 1 1 1 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 1 1 1 1 0 0 0 0 0 0 1 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 1 1 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0integer(0)

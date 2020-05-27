@@ -225,7 +225,7 @@ NumericMatrix originalMatrix_cv(String type, DataFrame data, int units){
     // Rcpp::Rcout<<"indexI: "<<index_i1<<std::endl;
     // Rcpp::Rcout<<"indexJ: "<<index_i2<<std::endl;
     // Rcpp::Rcout<<"value: "<<value<<std::endl;
-    
+
     if(type == "symmetric" ){
       matrix_cv(index_i1, index_i2) = value;
       matrix_cv(index_i2, index_i1) = value;
@@ -234,6 +234,15 @@ NumericMatrix originalMatrix_cv(String type, DataFrame data, int units){
       matrix_cv(index_i1, index_i2) = value;
     }
   }
+
+  
+  
+  
+    // if(type == "symmetric" ){
+    //   matrix_cv(index_i1, index_i2) = value;
+    // }}
+  
+  
   return matrix_cv;
 }
 
