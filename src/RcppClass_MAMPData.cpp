@@ -338,7 +338,7 @@ List MAMPData::get_UnitStatus(){
   IntegerVector unitsLockedIn;     //Pre-included planning units.
   IntegerVector unitsLockedOut;    //Pre-excluded planning units.
   IntegerVector vectorAux01 = data02[0]; //To identify the planning unit i.
-  IntegerVector vectorAux02 = data02[2]; //To identify the "status" of planning unit i.
+  IntegerVector vectorAux02 = data02[2]; //To identify the "status" of planning unit i (variable W[i]).
   int dataSize = data02.nrows();
   
   for(int r = 0; r < dataSize; r++){  
@@ -361,6 +361,59 @@ List MAMPData::get_UnitStatus(){
   return unitStatus;
 }
 
+
+
+
+
+//METHOD: 
+List MAMPData::get_ActionStatus(){
+  IntegerVector vectorAux01 = data05[0]; //To identify the planning unit i.
+  IntegerVector vectorAux02 = data05[1]; //To identify the threat k.
+  IntegerVector vectorAux03 = data05[4]; //To identify the "status" of a possible action (variable X[i,k]).
+  int dataSize = data05.nrows();
+
+  IntegerVector unrestrictedIndexI;
+  IntegerVector unrestrictedIndexK;
+  
+  IntegerVector lockedInIndexI;
+  IntegerVector lockedInIndexK;
+  
+  IntegerVector lockedOutIndexI;
+  IntegerVector lockedOutIndexK;
+  
+  for(int r = 0; r < dataSize; r++){
+    int filterCondition = vectorAux03[r];
+    if(filterCondition == 0){
+      unrestrictedIndexI.push_back(vectorAux01[r]);
+      unrestrictedIndexK.push_back(vectorAux02[r]);
+    }
+    if(filterCondition == 2){ //If the action status equals 2, it means the action is "locked-in"
+      lockedInIndexI.push_back(vectorAux01[r]);
+      lockedInIndexK.push_back(vectorAux02[r]);
+    }
+    if(filterCondition == 3){ //If the action status equals 3, it means the action is "locked-out"
+      lockedOutIndexI.push_back(vectorAux01[r]);
+      lockedOutIndexK.push_back(vectorAux02[r]);
+    }
+    
+  }//END for
+
+  IntegerMatrix actionsUnrestricted = cbind(unrestrictedIndexI, unrestrictedIndexK); //Unrestricted planning units.
+  actionsUnrestricted.attr("dim")   = Dimension(actionsUnrestricted.nrow(), 2);
+  colnames(actionsUnrestricted)     = CharacterVector::create("i", "k");
+  
+  IntegerMatrix actionsLockedIn = cbind(lockedInIndexI, lockedInIndexK); //Pre-included planning units.
+  actionsLockedIn.attr("dim")   = Dimension(actionsLockedIn.nrow(), 2);
+  colnames(actionsLockedIn)     = CharacterVector::create("i", "k");
+  
+  IntegerMatrix actionsLockedOut = cbind(lockedOutIndexI, lockedOutIndexK); //Pre-excluded planning units.
+  actionsLockedOut.attr("dim")   = Dimension(actionsLockedOut.nrow(), 2);
+  colnames(actionsLockedOut)     = CharacterVector::create("i", "k");
+
+  
+  List actionStatus = List::create(Named("Unrestricted") = actionsUnrestricted, _["LockedIn"] = actionsLockedIn,_["LockedOut"] = actionsLockedOut);
+  return actionStatus;
+}
 
 //RCPP 'EXPOSURE BLOCK'.
 RCPP_MODULE(MAMPDatamodule){
@@ -402,7 +455,8 @@ RCPP_MODULE(MAMPDatamodule){
   .method( "getBeta2",       &MAMPData::getBeta2,       "documentation for getBeta2") 
   //New methods for "status column" (in "unitCost_Data" and "threatsDistribution_Data") 
   .method( "get_UnitStatus", &MAMPData::get_UnitStatus, "documentation for get_UnitStatus")
-
+  .method( "get_ActionStatus", &MAMPData::get_ActionStatus, "documentation for get_ActionStatus")
+  
   ; //ATENTION! With ";" 
 }
 

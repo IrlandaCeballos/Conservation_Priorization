@@ -48,6 +48,7 @@ public:
   double getBeta2();
   //New methods for "status column" (in "unitCost_Data" and "threatsDistribution_Data")
   List get_UnitStatus();
+  List get_ActionStatus(); 
 
   
 private:

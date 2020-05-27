@@ -225,7 +225,7 @@ NumericMatrix originalMatrix_cv(String type, DataFrame data, int units){
     // Rcpp::Rcout<<"indexI: "<<index_i1<<std::endl;
     // Rcpp::Rcout<<"indexJ: "<<index_i2<<std::endl;
     // Rcpp::Rcout<<"value: "<<value<<std::endl;
-    
+
     if(type == "symmetric" ){
       matrix_cv(index_i1, index_i2) = value;
       matrix_cv(index_i2, index_i1) = value;
@@ -234,6 +234,15 @@ NumericMatrix originalMatrix_cv(String type, DataFrame data, int units){
       matrix_cv(index_i1, index_i2) = value;
     }
   }
+
+  
+  
+  
+    // if(type == "symmetric" ){
+    //   matrix_cv(index_i1, index_i2) = value;
+    // }}
+  
+  
   return matrix_cv;
 }
 
@@ -266,24 +275,44 @@ return matrix_Distribution;
 }
 
 /*
- * Function that creates matrix "c[i,k]" from vector "cm[i]", assuming that the cost of applying an action to eliminate 
+ * Function that creates matrix "c[i,k]" from vector "cm[i]", assuming that the cost of applying an action to eliminate
  * threat k in K from unit i in I is the same for all threats that are in i (set Ki).
  * Function only needs the original matrix of threats distribution and the vector of planning unit cost.
  */
+// NumericMatrix createMatrix_c(IntegerMatrix dataDistribution, NumericVector dataCost){
+//   int numberRows    = dataDistribution.nrow();
+//   int numberColumns = dataDistribution.ncol();
+//   NumericMatrix matrix_c(numberRows, numberColumns);
+//
+//   for(int i = 0; i < numberColumns; i++){
+//     for(int j = 0; j < numberRows; j++){
+//       if(dataDistribution(j, i) != 0){
+//         matrix_c(j, i) = dataCost[i];
+//       }
+//     }
+//   }
+//   return matrix_c;
+// }
+
 // [[Rcpp::export(name = "createMatrix_c")]]
-NumericMatrix createMatrix_c(IntegerMatrix dataDistribution, NumericVector dataCost){
-  int numberRows    = dataDistribution.nrow();
-  int numberColumns = dataDistribution.ncol();
-  NumericMatrix matrix_c(numberRows, numberColumns);
+IntegerMatrix createMatrix_c(DataFrame data, int units, int threats){
+  IntegerVector vectorAux01 = data[0]; //pu
+  IntegerVector vectorAux02 = data[1]; //species (or threats)
+  IntegerVector vectorAux03 = data[3]; //amount
+  IntegerMatrix matrix_Distribution(threats, units); //nrow = species (or threats), ncol = units
   
-  for(int i = 0; i < numberColumns; i++){
-    for(int j = 0; j < numberRows; j++){
-      if(dataDistribution(j, i) != 0){
-        matrix_c(j, i) = dataCost[i];
-      } 
-    }
+  int dataSize =  data.nrows();
+  int index_i  = 0; //index for units
+  int index_s  = 0; //index for species (or threats)
+  double value;
+  
+  for(int l = 0; l < dataSize; l++){
+    index_i = vectorAux01[l] -1;
+    index_s = vectorAux02[l] -1;
+    value   = vectorAux03[l];
+    matrix_Distribution(index_s, index_i) = value;
   }
-  return matrix_c;
+  return matrix_Distribution;
 }
 
 

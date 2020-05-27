@@ -8,44 +8,49 @@ Rcpp::sourceCpp(file = "src/RcppFunction_GlobalFunctions.cpp")
 nameInstanceRun     = "runMAMP-E_15.txt"
 preprocessingTime_1 = Sys.time()
 
+
+
 # Installation of the GUROBI solver.
 #utils::install.packages("c:/gurobi901/win64/R/gurobi_9.0-1.zip", repos = NULL)
 #utils::install.packages("slam", repos = "https://cloud.r-project.org")
 
-# Reading input data for MARXAN and/or MAMP models (instance size: 10 units/ 5 species/ 3 threats)
-#------------------------------------------------------------------------------------------
-target_Data   <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/target_ExtremelySmall.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), target = readr::col_integer(), name = readr::col_character() ))%>%dplyr::select(1:3))
-unitCost_Data <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/unitCost_ExtremelySmall.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:3))
-boundary_Data <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/boundary_ExtremelySmall.csv", ";",
-                                                 trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  ))%>%dplyr::select(1:3))
-speciesDistribution_Data <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/speciesDistribution_ExtremelySmall.csv", ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), species = readr::col_integer(), amount = readr::col_integer() ))%>%dplyr::select(1:3))
-# New data required by the MAMP problem (threats distribution, species-threats sensibility and action cost)
-threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/threatsDistribution_ExtremelySmall.csv",
-                                                             ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:5) )
-sensibility_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/sensibility_ExtremelySmall.csv",
-                                                     ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
+# # Reading input data for MARXAN and/or MAMP models (instance size: 10 units/ 5 species/ 3 threats)
+# # ------------------------------------------------------------------------------------------
+# target_Data   <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/target_ExtremelySmall.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), target = readr::col_integer(), name = readr::col_character() ))%>%dplyr::select(1:3))
+# unitCost_Data <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/unitCost_ExtremelySmall.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:3))
+# boundary_Data <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/boundary_ExtremelySmall.csv", ";",
+#                                                  trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  ))%>%dplyr::select(1:3))
+# speciesDistribution_Data <- as.data.frame(readr::read_delim("data/data_ExtremelySmall/speciesDistribution_ExtremelySmall.csv", ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), species = readr::col_integer(), amount = readr::col_integer() ))%>%dplyr::select(1:3))
+# # New data required by the MAMP problem (threats distribution, species-threats sensibility and action cost)
+# threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/threatsDistribution_ExtremelySmall.csv",
+#                                                              ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:5) )
+# sensibility_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/sensibility_ExtremelySmall.csv",
+#                                                      ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
+
 # save(target_Data, file = "data/rda_data_ExtremelySmall/target_Data.rda")
 # save(unitCost_Data, file = "data/rda_data_ExtremelySmall/unitCost_Data.rda")
 # save(boundary_Data, file = "data/rda_data_ExtremelySmall/boundary_Data.rda")
 # save(speciesDistribution_Data, file = "data/rda_data_ExtremelySmall/speciesDistribution_Data.rda")
 # save(threatsDistribution_Data, file = "data/rda_data_ExtremelySmall/threatsDistribution_Data.rda")
 # save(sensibility_Data, file = "data/rda_data_ExtremelySmall/sensibility_Data.rda")
+
 # 
-# 
-# # Reading input data for MARXAN and/or MAMP models (instance size: 240 units/ 10 species/ 4 threats)
-# target_Data   <- as.data.frame(readr::read_delim("data/data_Small/target_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), target = readr::col_integer(), name = readr::col_character() ))%>%dplyr::select(1:3))
-# unitCost_Data <- as.data.frame(readr::read_delim("data/data_Small/unitCost_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:3))
-# boundary_Data <- as.data.frame(readr::read_delim("data/data_Small/boundary_Small.csv", ";",
-#                                                  trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  ))%>%dplyr::select(1:3))
-# speciesDistribution_Data <- as.data.frame(readr::read_delim("data/data_Small/speciesDistribution_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), species = readr::col_integer(), amount = readr::col_integer() ))%>%dplyr::select(1:3))
-# # New data required by the MAMP problem (threats distribution, species-threats sensibility and action cost)
-# threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_Small/threatsDistribution_Small.csv",
-#                                                              ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:5) )
-# sensibility_Data <- as.data.frame( readr::read_delim("data/data_Small/sensibility_Small.csv",
-#                                                      ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
-# 
-# 
+# Reading input data for MARXAN and/or MAMP models (instance size: 240 units/ 10 species/ 4 threats)
+# ------------------------------------------------------------------------------------------
+target_Data   <- as.data.frame(readr::read_delim("data/data_Small/target_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), target = readr::col_integer(), name = readr::col_character() ))%>%dplyr::select(1:3))
+unitCost_Data <- as.data.frame(readr::read_delim("data/data_Small/unitCost_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:3))
+boundary_Data <- as.data.frame(readr::read_delim("data/data_Small/boundary_Small.csv", ";",
+                                                 trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  ))%>%dplyr::select(1:3))
+speciesDistribution_Data <- as.data.frame(readr::read_delim("data/data_Small/speciesDistribution_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), species = readr::col_integer(), amount = readr::col_integer() ))%>%dplyr::select(1:3))
+# New data required by the MAMP problem (threats distribution, species-threats sensibility and action cost)
+threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_Small/threatsDistribution_Small.csv",
+                                                             ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:5) )
+sensibility_Data <- as.data.frame( readr::read_delim("data/data_Small/sensibility_Small.csv",
+                                                     ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
+#
+
 # # Reading input data for MARXAN and/or MAMP models (instance size: 2316 units/ 45 species/ 4 threats)
+#------------------------------------------------------------------------------------------
 # target_Data   <- as.data.frame(readr::read_delim("data/data_Big/target_Big.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), target = readr::col_integer(), name = readr::col_character() ))%>%dplyr::select(1:3))
 # unitCost_Data <- as.data.frame(readr::read_delim("data/data_Big/unitCost_Big.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:3))
 # boundary_Data <- as.data.frame(readr::read_delim("data/data_Big/boundary_Big.csv", ";",
@@ -66,9 +71,8 @@ settings_Data    <- list(beta1 = beta1_Data, beta2 = beta2_Data, exponent = expo
 #------------------------------------------------------------------------------------------
 #---------------------- Implementation of the MAMP and MAMP-e models ---------------------- 
 #------------------------------------------------------------------------------------------
-#Observation: "MAMPData" Class was writen in the C++ language.
+# Observation: "MAMPData" Class was writen in the C++ language.
 problemData = methods::new(MAMPData, target_Data, unitCost_Data, boundary_Data, speciesDistribution_Data, threatsDistribution_Data, sensibility_Data, settings_Data)
-
 
 beta1             = problemData$getBeta1()       #beta1 set in 1 for default!
 beta2             = problemData$getBeta2()       #beta2 set in 1 for default!
@@ -80,15 +84,16 @@ numberSegments    = problemData$getSegments()    #numberSegments = (numberBreakp
 bp    = problemData$get_bp()  
 bp3   = problemData$get_bp3()  
 slope = problemData$get_slope()
-# NEW! Status of planning units (i.e.: unrestricted [0], pre-included [2] or pre-excluded [3])
-unitStatus = problemData$get_UnitStatus()
+# NEW! Status of planning units and actions (i.e.: unrestricted [0], pre-included [2] or pre-excluded [3])
+unitStatus   = problemData$get_UnitStatus()
+actionStatus = problemData$get_ActionStatus()
 
 numberUnits   = problemData$getUnits()
 numberSpecies = problemData$getSpecies()
 numberThreats = problemData$getThreats()
 actionCost    = problemData$getActionCost()
 ts            = problemData$getTarget()     #Conservation target of each species!
-hola          = problemData$getBoundary()
+#hola          = problemData$getBoundary()
 
 Si = problemData$getSet("Si") #It corresponds to the set Si (Si belong to set S).
 Ki = problemData$getSet("Ki") #It corresponds to the set Ki (Ki belong to set K).
@@ -96,15 +101,16 @@ Ks = problemData$getSet("Ks") #It corresponds to the set Ks (Ks belong to set K)
 Is = problemData$getSet("Is") #It corresponds to the set Is (Is belong to set I).
 
 
-#matrix_cv corresponds to the original quadrate matrix "cv[i1,i2]", the symmetric one!
-#matrix_speciesDistribution, matrix_threatsDistribution and matrix_c corresponds to the original matrices
+# matrix_cv corresponds to the original quadrate matrix "cv[i1,i2]", the symmetric one!
+# matrix_speciesDistribution, matrix_threatsDistribution and matrix_c corresponds to the original matrices
 #(that is, not the dense matrix in its tuple version).
 #Observation: "originalMatrix_cv()", "originalMatrix_Distribution()" and "createMatrix_c()" functions were written in the C++ language.
 matrix_cv <- originalMatrix_cv(type="symmetric", data= boundary_Data, units= numberUnits) 
 matrix_speciesDistribution <- originalMatrix_Distribution(data= speciesDistribution_Data, units= numberUnits, species= numberSpecies)
 matrix_threatsDistribution <- originalMatrix_Distribution(data= threatsDistribution_Data, units= numberUnits, species= numberThreats)
-matrix_c <- createMatrix_c(dataDistribution = matrix_threatsDistribution, dataCost = as.vector(x = unitCost_Data[,2] , mode = "numeric"))
+matrix_c <- createMatrix_c(data= threatsDistribution_Data, units= numberUnits, threats= numberThreats)
 
+#matrix_c <- createMatrix_c(dataDistribution = matrix_threatsDistribution, dataCost = as.vector(x = unitCost_Data[,2] , mode = "numeric"))
 # utils::write.csv(matrix_cv, file="NEW_cv_Matrix.csv", row.names = F)
 # utils::write.csv(matrix_speciesDistribution, file="NEW_speciesDistribution_Matrix.csv", row.names = F)
 # utils::write.csv(matrix_threatsDistribution, file="NEW_threatsDistribution_Matrix.csv", row.names = F)
@@ -848,8 +854,55 @@ if(initialSolution_Units == TRUE && length(unitStatus$LockedOut) != 0){
   matrixA_MAMP12_02 = Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP12_02, ncol = numberVariables, sparse = TRUE)
 }
   
+#------------------------------------------------------------------------------------------
+#------- Matrix A - Coeffs. associated with the initial solution of the MAMP model --------
+#---- (MAMP.13 - Restr. for each variable X[i,k] given by the "status" of the actions) ----
+#------------------------------------------------------------------------------------------
+# Is there an initial solution of the model?
+initialSolution_Actions = FALSE
+if(nrow(actionStatus$Unrestricted) != 0){
+  initialSolution_Actions = TRUE
+}
+
+# Are there pre-included ("locked-in") actions?
+if(initialSolution_Actions == TRUE && nrow(actionStatus$LockedIn) != 0){
+  sizeRHS_MAMP13_01 = nrow(actionStatus$LockedIn) 
+  matrixA_MAMP13_01 = matrix(data = 0, nrow = sizeRHS_MAMP13_01, ncol = numberVariables)
+  #matrixA_MAMP13_01 = Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP13_01, ncol = numberVariables, sparse = TRUE)
+  
+  for (i in 1:sizeRHS_MAMP13_01) {
+    varX_ik  = variableX(actionStatus$LockedIn[[i,1]], actionStatus$LockedIn[[i,2]])
+    posX_Xik = break_3 + match(varX_ik, vectorVariablesX) 
+    posY_Xik = i
+    # Constraint of type X[i,k] == 1
+    matrixA_MAMP13_01[posY_Xik, posX_Xik] = 1
+  }
+}else{
+  sizeRHS_MAMP13_01 = 0
+  matrixA_MAMP13_01 = Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP13_01, ncol = numberVariables, sparse = TRUE)
+}#END first If
 
 
+# Are there pre-excluded ("locked-out") actions?
+if(initialSolution_Actions == TRUE && nrow(actionStatus$LockedOut) != 0){
+  sizeRHS_MAMP13_02 = nrow(actionStatus$LockedOut) 
+  matrixA_MAMP13_02 = matrix(data = 0, nrow = sizeRHS_MAMP13_02, ncol = numberVariables)
+  #matrixA_MAMP13_02 = Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP13_02, ncol = numberVariables, sparse = TRUE)
+  
+  for (i in 1:sizeRHS_MAMP13_02) {
+    varX_ik  = variableX(actionStatus$LockedOut[[i,1]], actionStatus$LockedOut[[i,2]])
+    posX_Xik = break_3 + match(varX_ik, vectorVariablesX) 
+    posY_Xik = i
+    # Constraint of type X[i,k] == 0
+    matrixA_MAMP13_02[posY_Xik, posX_Xik] = 1
+  }
+}else{
+  sizeRHS_MAMP13_02 = 0
+  matrixA_MAMP13_02 = Matrix::Matrix(data = 0, nrow = sizeRHS_MAMP13_02, ncol = numberVariables, sparse = TRUE)
+}#END second If
+
+#utils::View( matrixA_MAMP13_01 [ , (break_3+1):(break_3+numberVariablesX)] )
+#utils::View( matrixA_MAMP13_02 [ , (break_3+1):(break_3+numberVariablesX)] )
 
 #------------------------------------------------------------------------------------------
 #Conditions for constructing matrix A.
@@ -873,7 +926,7 @@ if(beta1 != 0){
   }
 }
 
-# Is there an initial solution of the model?
+# NEW! Is there an initial solution of the model?
 # Are there pre-included ("locked-in") units?
 if(initialSolution_Units == TRUE && length(unitStatus$LockedIn) != 0){
   matrixA_Final = rbind(matrixA_Final, matrixA_MAMP12_01)
@@ -883,10 +936,18 @@ if(initialSolution_Units == TRUE && length(unitStatus$LockedOut) != 0){
   matrixA_Final = rbind(matrixA_Final, matrixA_MAMP12_02)
 }
 
+# Are there pre-included ("locked-in") actions?
+if(initialSolution_Actions == TRUE && nrow(actionStatus$LockedIn) != 0){
+  matrixA_Final = rbind(matrixA_Final, matrixA_MAMP13_01)
+}
+# Are there pre-excluded ("locked-out") actions?
+if(initialSolution_Actions == TRUE && nrow(actionStatus$LockedOut) != 0){
+  matrixA_Final = rbind(matrixA_Final, matrixA_MAMP13_02)
+}
+
 
 #utils::View(matrixA_Final)
 utils::object.size(matrixA_Final)/(1024*1024)
-
 #------------------------------------------------------------------------------------------
 #----------------- Vector b - Parameters associated with all restrictions -----------------
 #-------------------------------- (RHS, right-hand side) ----------------------------------
@@ -906,11 +967,13 @@ vectorb_MAMP11 = rep(c(0,0,-1), numberVariablesP)
 
 vectorb_MAMP12_01 = rep(1, sizeRHS_MAMP12_01) #NEW!
 vectorb_MAMP12_02 = rep(0, sizeRHS_MAMP12_02) #NEW!
+vectorb_MAMP13_01 = rep(1, sizeRHS_MAMP13_01) #NEW!
+vectorb_MAMP13_02 = rep(0, sizeRHS_MAMP13_02) #NEW!
 
 #Transform the vector into a "sparse" type
 vectorb_Final = c(vectorb_MAMP2, vectorb_MAMP3, vectorb_MAMP4, vectorb_MAMP6, vectorb_MAMP7, vectorb_MAMP8, vectorb_MAMP9, vectorb_MAMP10, vectorb_MAMP11)
-# Is there an initial solution of the model? 
-vectorb_Final = c(vectorb_Final, vectorb_MAMP12_01, vectorb_MAMP12_02) #NEW!
+# NEW! Is there an initial solution of the model? 
+vectorb_Final = c(vectorb_Final, vectorb_MAMP12_01, vectorb_MAMP12_02, vectorb_MAMP13_01, vectorb_MAMP13_02) #NEW!
 
 vectorb_Final = methods::as(object = vectorb_Final, Class = "sparseVector")
 #------------------------------------------------------------------------------------------
@@ -930,8 +993,10 @@ vectorSense_MAMP11 = rep( c("<=","<=",">="), numberVariablesP) #NEW!
 
 vectorSense_MAMP12_01 = rep("==", sizeRHS_MAMP12_01) #NEW!
 vectorSense_MAMP12_02 = rep("==", sizeRHS_MAMP12_02) #NEW!
+vectorSense_MAMP13_01 = rep("==", sizeRHS_MAMP13_01) #NEW!
+vectorSense_MAMP13_02 = rep("==", sizeRHS_MAMP13_02) #NEW!
 
-vectorSense_Final  = c(vectorSense_MAMP2, vectorSense_MAMP3, vectorSense_MAMP4, vectorSense_MAMP6, vectorSense_MAMP7, vectorSense_MAMP8, vectorSense_MAMP9, vectorSense_MAMP10, vectorSense_MAMP11, vectorSense_MAMP12_01, vectorSense_MAMP12_02)
+vectorSense_Final  = c(vectorSense_MAMP2, vectorSense_MAMP3, vectorSense_MAMP4, vectorSense_MAMP6, vectorSense_MAMP7, vectorSense_MAMP8, vectorSense_MAMP9, vectorSense_MAMP10, vectorSense_MAMP11, vectorSense_MAMP12_01, vectorSense_MAMP12_02, vectorSense_MAMP13_01, vectorSense_MAMP13_02)
 
 #Bounds of the variables.
 lowerBound_W      = rep(0, numberVariablesW) 
@@ -1003,7 +1068,7 @@ modelSolver_Gurobi <- gurobi::gurobi(modelGurobi, list())
 print(modelSolver_Gurobi)
 
 
-sink(nameInstanceRun)
+#sink(nameInstanceRun)
 processingTime_2 = Sys.time() ; processingTime = processingTime_2 - processingTime_1
 cat(" Instance size = ", numberUnits, "units, ", numberSpecies, "species, ", numberThreats, "threats.\n")+
 cat(" Instance run parameters = ", "b1:", beta1, ", b2:", beta2,", Exponent:", exponent, ", Breakpoints:",numberBreakpoints, "\n") +
@@ -1012,7 +1077,17 @@ cat(" Number of variables = ", numberVariables, "\n", "Matrix A dimensions = ", 
 cat(" Status reported by the solver = ", modelSolver_Gurobi$status, "\n", "Objective value = ", modelSolver_Gurobi$objval, "\n", "GAP = ", methods::as(object = modelSolver_Gurobi$mipgap, Class = "numeric"), "\n") +
 cat(" Decision variables = \n", vectorVariables, "\n") + 
 cat(" Optimal solution = \n", modelSolver_Gurobi$x)  
-sink()
+#sink()
+
+cat(" Number of variables W      = ", numberVariablesW, "\n") + 
+cat(" Number of variables Y      = ", numberVariablesY, "\n") + 
+cat(" Number of variables X      = ", numberVariablesX, "\n") + 
+cat(" Number of variables Z      = ", numberVariablesZ, "\n") + 
+cat(" Number of variables B      = ", numberVariablesB, "\n") + 
+cat(" Number of variables Lambda = ", numberVariablesLambda, "\n") + 
+cat(" Number of variables V      = ", numberVariablesV, "\n") + 
+cat(" Number of variables P      = ", numberVariablesP, "\n")
+
 # #------------------------------------------------------------------------------------------
 # #------------------------------------ Rsymphony Solver! -----------------------------------
 # #------------------------------------------------------------------------------------------
