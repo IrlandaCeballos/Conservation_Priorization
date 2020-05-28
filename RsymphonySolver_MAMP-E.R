@@ -153,14 +153,9 @@ numberVariablesW = numberUnits
 #-------------- Vector C - Coefficients associated with the connectivity cost -------------
 #-------------------- (coefficients associated with Y[i1,i2] variables) -------------------
 #------------------------------------------------------------------------------------------
-# Observation: vector with the associated coefficients of each variable Y[i1,i2] 
-#(number of positions equivalent to the number of planning units)
-vectorC_VarY <- c()
-
 #Creation of vectors containing the name of the decision variables (variables W[i] and Y[i1,i2]).
 #Observation: "createVectorVarW()" Function was written in C++ language.
 vectorVariablesW   = createVectorVarW(units = numberUnits);
-vectorVariablesY   = c()
 vectorIndex_i1_Yij = c()
 vectorIndex_i2_Yij = c()
 
@@ -170,20 +165,26 @@ if(beta1 != 0){
   for(i in 1:numberUnits){
     for(j in 1:numberUnits){
       if(i!=j && matrix_cv[i,j] != 0){
-        #Observation: "variableY()" Function was written in C++ language.
-        varY = variableY(i,j)
-        
         vectorIndex_i1_Yij = c(vectorIndex_i1_Yij, i)
         vectorIndex_i2_Yij = c(vectorIndex_i2_Yij, j)
-        vectorVariablesY   = c(vectorVariablesY, varY)
         
-        connectivityCoeff = -beta1*matrix_cv[i,j]
-        vectorC_VarY = c(vectorC_VarY, connectivityCoeff)
+        vectorIndex_i1_Yij = c(vectorIndex_i1_Yij, j)
+        vectorIndex_i2_Yij = c(vectorIndex_i2_Yij, i)
       }
     }
   }
 }#END If
 
+matrixIndex_Yi1i12 = unique(cbind(vectorIndex_i1_Yij, vectorIndex_i2_Yij))
+matrixIndex_Yi1i12 = matrixIndex_Yi1i12[order(matrixIndex_Yi1i12[,1], matrixIndex_Yi1i12[,2]), ]
+colnames(matrixIndex_Yi1i12) = c("i1","i2")
+rownames(matrixIndex_Yi1i12) = c(1:nrow(matrixIndex_Yi1i12))
+
+# Observation: "variableY()" Function was written in C++ language.
+# Observation: "vectorC_VarY" is a vector with the associated coefficients of each variable Y[i1,i2] 
+# (number of positions equivalent to the number of planning units)
+vectorVariablesY = apply(X = matrixIndex_Yi1i12, MARGIN = 1, FUN = function(x) variableY(x[1], x[2])) 
+vectorC_VarY     = apply(X = matrixIndex_Yi1i12, MARGIN = 1, FUN = function(x) -1*beta1*matrix_cv[x[1],x[2]] ) 
 numberVariablesY = length(vectorVariablesY)
 
 #------------------------------------------------------------------------------------------
@@ -313,12 +314,16 @@ if(beta2 != 0){
       if(i!=j && matrix_cv[i,j] != 0){
         vectorIndex_i1_Yij = c(vectorIndex_i1_Yij, i)
         vectorIndex_i2_Yij = c(vectorIndex_i2_Yij, j)
+        
+        vectorIndex_i1_Yij = c(vectorIndex_i1_Yij, j)
+        vectorIndex_i2_Yij = c(vectorIndex_i2_Yij, i)
       }
     }
   }
 
-  #Matrix ordered by i1 and then by i2 (since its creation).
-  matrixIndex_Yi1i12   = cbind(vectorIndex_i1_Yij, vectorIndex_i2_Yij)
+  matrixIndex_Yi1i12   = unique(cbind(vectorIndex_i1_Yij, vectorIndex_i2_Yij))
+  matrixIndex_Yi1i12   = matrixIndex_Yi1i12[order(matrixIndex_Yi1i12[,1], matrixIndex_Yi1i12[,2]), ]
+
   matrixIndex_Pi1i12k  = matrix(data = 0, nrow = 0, ncol = 3);
   boundarySize         = nrow(matrixIndex_Yi1i12)
   vectorVariablesP     = c()

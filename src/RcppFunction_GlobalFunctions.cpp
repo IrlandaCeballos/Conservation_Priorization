@@ -237,7 +237,7 @@ NumericMatrix originalMatrix_cv(String type, DataFrame data, int units){
 
   
   
-  
+
     // if(type == "symmetric" ){
     //   matrix_cv(index_i1, index_i2) = value;
     // }}
