@@ -9,6 +9,12 @@ nameInstanceRun     = "runMAMP-E_15.txt"
 preprocessingTime_1 = Sys.time()
 
 
+Rcpp::sourceCpp(file = "src/RcppFunction_TestFunction.cpp")
+rcpp_match("W[3]", vectorVariablesW)
+rcpp_match("X[240,1]", vectorVariablesX)
+rcpp_match_2("X[240,1]", vectorVariablesX)
+rcpp_hola()
+
 
 # Installation of the GUROBI solver.
 #utils::install.packages("c:/gurobi901/win64/R/gurobi_9.0-1.zip", repos = NULL)
@@ -27,17 +33,21 @@ preprocessingTime_1 = Sys.time()
 # sensibility_Data <- as.data.frame( readr::read_delim("data/data_ExtremelySmall/sensibility_ExtremelySmall.csv",
 #                                                      ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
 
-# save(target_Data, file = "data/rda_data_ExtremelySmall/target_Data.rda")
-# save(unitCost_Data, file = "data/rda_data_ExtremelySmall/unitCost_Data.rda")
-# save(boundary_Data, file = "data/rda_data_ExtremelySmall/boundary_Data.rda")
-# save(speciesDistribution_Data, file = "data/rda_data_ExtremelySmall/speciesDistribution_Data.rda")
-# save(threatsDistribution_Data, file = "data/rda_data_ExtremelySmall/threatsDistribution_Data.rda")
-# save(sensibility_Data, file = "data/rda_data_ExtremelySmall/sensibility_Data.rda")
+# save(target_Data, file = "data/target_Data.rda")
+# save(unitCost_Data, file = "data/unitCost_Data.rda")
+# save(boundary_Data, file = "data/boundary_Data.rda")
+# save(speciesDistribution_Data, file = "data/speciesDistribution_Data.rda")
+# save(threatsDistribution_Data, file = "data/threatsDistribution_Data.rda")
+# save(sensibility_Data, file = "data/sensibility_Data.rda")
 
 # 
 # Reading input data for MARXAN and/or MAMP models (instance size: 240 units/ 10 species/ 4 threats)
 # ------------------------------------------------------------------------------------------
 target_Data   <- as.data.frame(readr::read_delim("data/data_Small/target_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), target = readr::col_integer(), name = readr::col_character() ))%>%dplyr::select(1:3))
+
+#target_Data$target[1] <- 300
+
+
 unitCost_Data <- as.data.frame(readr::read_delim("data/data_Small/unitCost_Small.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:3))
 boundary_Data <- as.data.frame(readr::read_delim("data/data_Small/boundary_Small.csv", ";",
                                                  trim_ws = TRUE, col_types = readr::cols(id1 = readr::col_integer(), id2 = readr::col_integer(), boundary = readr::col_double()  ))%>%dplyr::select(1:3))
@@ -47,10 +57,10 @@ threatsDistribution_Data <- as.data.frame( readr::read_delim("data/data_Small/th
                                                              ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:5) )
 sensibility_Data <- as.data.frame( readr::read_delim("data/data_Small/sensibility_Small.csv",
                                                      ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
-#
+
 
 # # Reading input data for MARXAN and/or MAMP models (instance size: 2316 units/ 45 species/ 4 threats)
-#------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------
 # target_Data   <- as.data.frame(readr::read_delim("data/data_Big/target_Big.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), target = readr::col_integer(), name = readr::col_character() ))%>%dplyr::select(1:3))
 # unitCost_Data <- as.data.frame(readr::read_delim("data/data_Big/unitCost_Big.csv", ";", trim_ws = TRUE, col_types = readr::cols(id = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:3))
 # boundary_Data <- as.data.frame(readr::read_delim("data/data_Big/boundary_Big.csv", ";",
@@ -61,7 +71,7 @@ sensibility_Data <- as.data.frame( readr::read_delim("data/data_Small/sensibilit
 #                                                              ";", trim_ws = TRUE, col_types = readr::cols(pu = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer(), cost = readr::col_double(), status = readr::col_integer() ))%>%dplyr::select(1:5) )
 # sensibility_Data <- as.data.frame( readr::read_delim("data/data_Big/sensibility_Big.csv",
 #                                                      ";", trim_ws = TRUE, col_types = readr::cols(species = readr::col_integer(), threats = readr::col_integer(), amount = readr::col_integer() )) )
-# 
+
 
 beta1_Data       <- 1.0
 beta2_Data       <- 1.0
@@ -72,7 +82,19 @@ settings_Data    <- list(beta1 = beta1_Data, beta2 = beta2_Data, exponent = expo
 #---------------------- Implementation of the MAMP and MAMP-e models ---------------------- 
 #------------------------------------------------------------------------------------------
 # Observation: "MAMPData" Class was writen in the C++ language.
+#speciesDistribution_Data$amount[1] = 0
+#speciesDistribution_Data$amount[2] = 0
+#head(speciesDistribution_Data)
+
 problemData = methods::new(MAMPData, target_Data, unitCost_Data, boundary_Data, speciesDistribution_Data, threatsDistribution_Data, sensibility_Data, settings_Data)
+
+
+# hola   <- problemData$getSpeciesDistribution()
+# set_Si <- problemData$getSet("Si")
+# boundary_test <- problemData$getBoundary() 
+# View(boundary_test)
+
+
 
 beta1             = problemData$getBeta1()       #beta1 set in 1 for default!
 beta2             = problemData$getBeta2()       #beta2 set in 1 for default!
@@ -1064,9 +1086,19 @@ modelGurobi$sense      = replace(dir,dir == "==","=")
 modelGurobi$vtype      = types
 modelGurobi$A          = mat
 
-modelSolver_Gurobi <- gurobi::gurobi(modelGurobi, list()) 
+paramsGurobi               = list()
+paramsGurobi$LogToConsole  = as.numeric(TRUE)
+paramsGurobi$SolutionLimit = 0      ## Stop condition: MIP feasible solution limit
+if(paramsGurobi$SolutionLimit != 1){paramsGurobi$SolutionLimit = NULL}
+paramsGurobi$TimeLimit     = 100    ## Stop condition: Time limit
+paramsGurobi$MIPGap        = 0.0001 ## Stop condition: Relative MIP optimality gap
+
+modelSolver_Gurobi <- gurobi::gurobi(modelGurobi, paramsGurobi) 
 print(modelSolver_Gurobi)
 
+modelSolver_Gurobi$x      ## Optimal solution
+modelSolver_Gurobi$objval ## Optimal value
+modelSolver_Gurobi$status ## Solution status  
 
 #sink(nameInstanceRun)
 processingTime_2 = Sys.time() ; processingTime = processingTime_2 - processingTime_1
@@ -1091,15 +1123,20 @@ cat(" Number of variables P      = ", numberVariablesP, "\n")
 # #------------------------------------------------------------------------------------------
 # #------------------------------------ Rsymphony Solver! -----------------------------------
 # #------------------------------------------------------------------------------------------
-# modelSolver_Rsymphony <- Rsymphony::Rsymphony_solve_LP(obj, mat, dir, rhs, bounds = bounds, 
-#                                              types = types, max=max, verbosity = -2, write_lp = write_lp, write_mps = write_lp)
-# 
-# print(modelSolver_Rsymphony)
-# 
+modelSolver_Rsymphony <- Rsymphony::Rsymphony_solve_LP(obj, mat, dir, rhs, bounds = bounds,
+                                             types = types, max=max, verbosity = 1, time_limit = 10, write_lp = write_lp, write_mps = write_lp)
+
+#is.null(modelSolver_Rsymphony$objval)
+is.nan(modelSolver_Rsymphony$objval)
+print(modelSolver_Rsymphony)
+class(modelSolver_Rsymphony$status)
+modelSolver_Rsymphony$status == "TM_TIME_LIMIT_EXCEEDED"
+
 # #------------------------------------------------------------------------------------------
 # #--------------------------------------- GLPK Solver! -------------------------------------
 # #------------------------------------------------------------------------------------------
-# modelSolver_GLPK <- Rglpk::Rglpk_solve_LP(obj, mat, dir, rhs, bounds = bounds,
-#                                           types = types, max=max)
-# print(modelSolver_GLPK)
-# 
+modelSolver_GLPK <- Rglpk::Rglpk_solve_LP(obj, mat, dir, rhs, bounds = bounds,
+                                          types = types, max=max, verbose = TRUE)
+print(modelSolver_GLPK)
+
+class(modelSolver_GLPK$status)
